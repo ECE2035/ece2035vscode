@@ -7,6 +7,7 @@ on:
         description: 'Type of deployment'
         required: true
         default: 'patch'
+        type: choice
         options:
           - patch
           - minor
