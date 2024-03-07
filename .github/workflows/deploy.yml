@@ -28,8 +28,5 @@ jobs:
       - name: Install VSCE (Publishing Tool)
         run: npm install -g @vscode/vsce
 
-      - name: Set up VSCE
-        run: vsce login ${{ secrets.VS_PUBLISHER_ID }}
-
       - name: Publish Extension
         run: vsce publish ${{ github.event.inputs.type }} -p ${{ secrets.AZURE_ACCESS_KEY }}
