@@ -41,5 +41,5 @@ jobs:
         run: vsce publish ${{ github.event.inputs.type }} -p ${{ secrets.AZURE_ACCESS_KEY }}
       
       - name: Commit New Version in package.json
-        run: git add ./ece2035/package.json | git commit -m "Bump version | git push origin main"
+        run: git add ./ece2035/package.json | rm -f .git/index.lock | git commit -m "Bump version" | rm -f .git/index.lock | git push origin main
         
