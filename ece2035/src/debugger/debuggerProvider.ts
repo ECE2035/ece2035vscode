@@ -8,11 +8,11 @@ export class DebugConfigurationProvider implements vscode.DebugConfigurationProv
     provideDebugConfigurations(folder: vscode.WorkspaceFolder, token?: vscode.CancellationToken): vscode.DebugConfiguration[] {
         return [
             {
-                type: "mipsvm",
+                type: "riscv-vm",
                 request: "launch",
                 name: "Run Assembly",
                 program: "${file}"
             }
-        ]
+        ];
     }
 }

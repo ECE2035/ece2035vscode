@@ -1,0 +1,34 @@
+name: Deploy Extension
+
+on: 
+  workflow_dispatch:
+    inputs:
+      type:
+        description: 'Type of deployment'
+        required: true
+        default: 'patch'
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Install VSCE (Publishing Tool)
+        run: npm install -g @vscode/vsce
+
+      - name: Set up VSCE
+        run: vsce login ${{ secrets.VS_PUBLISHER_ID }} -p ${{ secrets.AZURE_ACCESS_KEY }}
+
+      - name: Publish Extension
+        run: vsce publish ${{ github.event.inputs.type }} -p ${{ secrets.AZURE_ACCESS_KEY }}

@@ -7,6 +7,9 @@ import { DebugConfigurationProvider } from './debugger/debuggerProvider';
 
 import { activateLanguageClient, deactivateLanguageClient } from './languageClient/languageClient';
 
+import {getScreenViewHTML} from './screenView/screenView';
+import { checkDependencies } from './depDownloader';
+
 const disposables: vscode.Disposable[] = [];
 
 // This method is called when your extension is activated
@@ -20,20 +23,38 @@ export function activate(context: vscode.ExtensionContext) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('ece2035.helloWorld', () => {
+	let disposable = vscode.commands.registerCommand('ece2035.openscreen', () => {
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from ECE2035!');
+		vscode.window.showInformationMessage('This will be opening the screen (coming soon)');
+		const panel = vscode.window.createWebviewPanel(
+			'screenView',
+			'RISC-V Screen View',
+			vscode.ViewColumn.Two,
+			{
+				enableScripts: true
+			}
+		);
+
+		panel.webview.html = getScreenViewHTML();
+		screenOpened = true;
+		panel.onDidDispose(() => {
+			screenOpened = false;
+		});
 	});
 
 	const configProvider = new DebugConfigurationProvider();
-    const descriptionFactory = new DebugDescriptorFactory();
-    disposables.push(vscode.debug.registerDebugAdapterDescriptorFactory("mipsvm", descriptionFactory));
-    disposables.push(vscode.debug.registerDebugConfigurationProvider("mipsvm", configProvider))
+    const descriptionFactory = new DebugDescriptorFactory(context);
+    disposables.push(vscode.debug.registerDebugAdapterDescriptorFactory("riscv-vm", descriptionFactory));
+    disposables.push(vscode.debug.registerDebugConfigurationProvider("riscv-vm", configProvider));
 	console.log("activated");
+
+	checkDependencies(context);
 
 	context.subscriptions.push(disposable);
 	activateLanguageClient(context);
+
+	vscode.debug.onDidStartDebugSession(debugStartedEvent);
 }
 
 // This method is called when your extension is deactivated
@@ -41,4 +62,26 @@ export function deactivate() {
 	console.log("deactived");
 	disposables.forEach(d => d.dispose());
 	deactivateLanguageClient();
+}
+
+var screenOpened = false;
+function debugStartedEvent(event: vscode.DebugSession) {
+	if (event.type === "riscv-vm") {
+		if (!screenOpened) {
+			const panel = vscode.window.createWebviewPanel(
+				'screenView',
+				'RISC-V Screen View',
+				vscode.ViewColumn.Two,
+				{
+					enableScripts: true
+				}
+			);
+
+			panel.webview.html = getScreenViewHTML();
+			screenOpened = true;
+			panel.onDidDispose(() => {
+				screenOpened = false;
+			});
+		}
+	}
 }

@@ -1,0 +1,5 @@
+THIS SOFTWARE IS PROVIDED AS-IS WITH NO LIABILITY TO ANY USAGE OF THE SOFTWARE.
+This software is intended for educational use only, it may contain bugs or inaccuracies.
+By using the software, you forfeit any rights to seek damages against the publisher(s) and
+the publishers are not responsible for any errors that are in the software or that arise of
+use of the software.

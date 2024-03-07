@@ -11,7 +11,7 @@ let languageClient: LanguageClient;
 
 export function activateLanguageClient(context: vscode.ExtensionContext) {
     const serverOptions: ServerOptions = {
-		command: "C:\\Users\\dcoop\\github\\RISC-V-Emulator\\riscvemulator.exe",
+		command: "C:\\Users\\dcoop\\github\\riscvemulator\\RISC-V-Emulator\\riscvemulator.exe", // context.globalState.get("riscvemulator") as string,
         args: ["languageServer"] // "debug"
 	};
 
