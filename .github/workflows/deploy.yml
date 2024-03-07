@@ -34,7 +34,7 @@ jobs:
 
       - name: Build Extension
         working-directory: ./ece2035
-        run: npm run build
+        run: npm run compile
 
       - name: Publish Extension
         working-directory: ./ece2035
