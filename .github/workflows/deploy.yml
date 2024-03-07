@@ -28,6 +28,14 @@ jobs:
       - name: Install VSCE (Publishing Tool)
         run: npm install -g @vscode/vsce
 
+      - name: Install Dependencies
+        working-directory: ./ece2035
+        run: npm install
+
+      - name: Build Extension
+        working-directory: ./ece2035
+        run: npm run build
+
       - name: Publish Extension
         working-directory: ./ece2035
         run: vsce publish ${{ github.event.inputs.type }} -p ${{ secrets.AZURE_ACCESS_KEY }}
