@@ -9,9 +9,16 @@ import {
 
 let languageClient: LanguageClient;
 
-export function activateLanguageClient(context: vscode.ExtensionContext) {
+export function activateLanguageClient(context: vscode.ExtensionContext, useLocalEmulator: boolean, localEmulatorPath: string) {
+    let command: string;
+    if (!useLocalEmulator) {
+        command = context.globalState.get("riscvemulator") as string;
+    } else {
+        command = localEmulatorPath;
+    }
+
     const serverOptions: ServerOptions = {
-		command: "C:\\Users\\dcoop\\github\\riscvemulator\\RISC-V-Emulator\\riscvemulator.exe", // context.globalState.get("riscvemulator") as string,
+		command: command,
         args: ["languageServer"] // "debug"
 	};
 

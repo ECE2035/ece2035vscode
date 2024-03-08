@@ -19,7 +19,7 @@
     "opcode": {
       "patterns": [
         {
-          "match": "\\b(add|sub|xor|or|and|sll|sra|srl|slt|sltu|addi|xori|ori|andi|slli|srli|srai|slti|sltiu|lb|lh|lw|lbu|lhu|sb|sh|sw|beq|bne|blt|bge|bltu|bgeu|jal|jalr|lui|auipc|ecall|ebreak)\\b",
+          "match": "\\b(add|sub|xor|or|and|sll|sra|srl|slt|sltu|addi|xori|ori|andi|slli|srli|srai|slti|sltiu|lb|lh|lw|lbu|lhu|sb|sh|sw|beq|bne|blt|bge|bltu|bgeu|jal|jalr|lui|auipc|ecall|ebreak|mul|mulh|mulsu|mulu|div|divu|rem|remu)\\b",
           "name": "entity.name.function.riscv"
         }
       ]
