@@ -14,11 +14,18 @@
     "onDebugResolve:riscv-vm"
   ],
   "main": "./out/extension.js",
+  "files": [
+    "assets/"
+  ],
   "contributes": {
     "commands": [
       {
         "command": "ece2035.openscreen",
         "title": "Open RISC-V Screen"
+      },
+      {
+        "command": "ece2035.newAssignment",
+        "title": "Create New RISCV Assignment"
       }
     ],
     "breakpoints": [

@@ -1,0 +1,12 @@
+{
+    "tasks": [
+        {
+            "type": "shell",
+            "label": "Build Assignment",
+            "command": "make",
+            "args": ["student_assignment"],
+            "problemMatcher": [],
+        }
+    ],
+    "version": "2.0.0"
+}
