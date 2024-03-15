@@ -4,7 +4,7 @@ import * as fs from 'fs';
 
 export function setUpDevEnvironment(context: vscode.ExtensionContext, targetDir: string) {
     // Copies the /src/exampleProject folder into the target directory
-    const exampleProjectPath = path.join(context.extensionPath, "src", "exampleProject");
+    const exampleProjectPath = path.join(context.extensionPath, "assets", "exampleProject");
     const targetProjectPath = targetDir;
 
     // Copy the example project
