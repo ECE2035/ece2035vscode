@@ -15,7 +15,8 @@
   ],
   "main": "./out/extension.js",
   "files": [
-    "assets/"
+    "assets/",
+    "resources/"
   ],
   "contributes": {
     "commands": [
@@ -26,6 +27,30 @@
       {
         "command": "ece2035.newAssignment",
         "title": "Create New RISCV Assignment"
+      },
+      {
+        "command": "ece2035.runTestCase",
+        "title": "Run RISCV Test Case",
+        "icon": "$(play)"
+      },
+      {
+        "command": "ece2035.debugTestCase",
+        "title": "Debug RISCV Test Case",
+        "icon": "$(debug-alt)"
+      },
+      {
+        "command": "ece2035.runAllTestCases",
+        "title": "Run All RISCV Test Cases",
+        "icon": "$(run-all)"
+      },
+      {
+        "command": "ece2035.deleteTestCase",
+        "title": "Delete RISCV Test Case",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "ece2035.viewTestCase",
+        "title": "View RISCV Test Case"
       }
     ],
     "breakpoints": [
@@ -99,7 +124,39 @@
         "scopeName": "source.riscv",
         "path": "./syntaxes/riscv.json"
       }
-    ]
+    ],
+    "views": {
+      "test": [{
+        "id": "riscvtestcases",
+        "name": "RISC-V Testcases"
+      }]
+    },
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "ece2035.deleteTestCase",
+          "when": "viewItem == testcase",
+          "group": "inline@3"
+        },
+        {
+          "command": "ece2035.runTestCase",
+          "when": "viewItem == testcase",
+          "group": "inline@1"
+        },
+        {
+          "command": "ece2035.debugTestCase",
+          "when": "viewItem == testcase",
+          "group": "inline@2"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "ece2035.runAllTestCases",
+          "when": "view == riscvtestcases",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

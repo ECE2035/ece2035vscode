@@ -5,66 +5,143 @@
     <title>Screen View</title>
     <script>
         var socket = null;
+        var seed = "";
+        const vscode = acquireVsCodeApi();
 
-        function connectWebsocket() {
-            // tries to connect to a websocket server at localhost:2035. If it fails, it should try again every 5 seconds
-            socket = new WebSocket("ws://localhost:2035/ws");
-            socket.addEventListener('error', function (event) {
-                //console.log("Failed to connect to emulator");
-                socket.close();
-                return;
-            });
-            socket.addEventListener('close', function (event) {
-                //console.log("Disconnected from emulator");
-                setTimeout(connectWebsocket, 1000);
-                return;
-            });
-            socket.addEventListener('open', function (event) {
-                //console.log("Connected to emulator");
-            });
-            socket.addEventListener('message', function (event) {
-                let data = JSON.parse(event.data);
-                console.log("message recieved! width:", data.width, "height:", data.height, "updates:", data.updates.length);
-                let canvas = document.getElementById("screen");
+        function handleUpdateScreen(data) {
+            console.log("message recieved! width:", data.width, "height:", data.height, "updates:", data.updates.length);
+            let canvas = document.getElementById("screen");
 
-                if (canvas.width != data.width || canvas.height != data.height) {
-                    canvas.width = data.width;
-                    canvas.height = data.height;
-                }
+            if (canvas.width != data.width || canvas.height != data.height) {
+                canvas.width = data.width;
+                canvas.height = data.height;
+            }
 
-                let ctx = canvas.getContext("2d");
-                ctx.willReadFrequently = true;
+            let ctx = canvas.getContext("2d");
+            ctx.willReadFrequently = true;
 
-                for (let update of data.updates) {
-                    let x = update.region_x;
-                    let y = update.region_y;
-                    let imageData = ctx.getImageData(x, y, 16, 16);
+            for (let update of data.updates) {
+                let x = update.region_x;
+                let y = update.region_y;
+                let imageData = ctx.getImageData(x, y, 16, 16);
 
-                    for (let i = 0; i < 16; i++) {
-                        for (let j = 0; j < 16; j++) {
-                            let index = (i * 16 + j) * 4;
-                            imageData.data[index] = update.data[i * 16 + j] & 0xFF; // red
-                            imageData.data[index + 1] = (update.data[i * 16 + j] >> 8) & 0xFF; // green
-                            imageData.data[index + 2] = (update.data[i * 16 + j] >> 16) & 0xFF; // blue
-                            imageData.data[index + 3] = 0xFF; // alpha
-                        }
+                for (let i = 0; i < 16; i++) {
+                    for (let j = 0; j < 16; j++) {
+                        let index = (i * 16 + j) * 4;
+                        imageData.data[index] = update.data[i * 16 + j] & 0xFF; // red
+                        imageData.data[index + 1] = (update.data[i * 16 + j] >> 8) & 0xFF; // green
+                        imageData.data[index + 2] = (update.data[i * 16 + j] >> 16) & 0xFF; // blue
+                        imageData.data[index + 3] = 0xFF; // alpha
                     }
-
-                    ctx.putImageData(imageData, x, y);
                 }
 
-                console.log("ack");
-                socket.send(JSON.stringify({ack: true}));
-            });
+                ctx.putImageData(imageData, x, y);
+            }
+
+            // updating stats
+            document.getElementById("stats-di").innerText = data.stats.di;
+            document.getElementById("stats-si").innerText = data.stats.si;
+            document.getElementById("stats-registers").innerText = data.stats.reg;
+            document.getElementById("stats-memory").innerText = data.stats.mem;
+
+            if (data.status == "passed") {
+                document.getElementById("stats-status").innerText = "Passed";
+                document.getElementById("stats-status").style.color = "green";
+            } else if (data.status == "failed") {
+                document.getElementById("stats-status").innerText = "Failed";
+                document.getElementById("stats-status").style.color = "var(--vscode-errorForeground)";
+            } else {
+                document.getElementById("stats-status").innerText = "Still Running";
+                document.getElementById("stats-status").style.color = "var(--vscode-descriptionForeground)";
+            }
         }
 
-        if (socket == null) {
-            connectWebsocket();
+        window.addEventListener('message', event => {
+            const message = event.data; // Received message
+            switch (message.command) {
+            case 'screen_update':
+                handleUpdateScreen(message.data);
+                break;
+            case 'context_update':
+                seed = message.data.seed;
+                break;
+            }
+        });
+
+        function saveTestCase() {
+            console.log("saving testcase");
+
+            // Saving the canvas image data as a base64 png image string
+            let canvas = document.getElementById("screen");
+            let image = canvas.toDataURL("image/png");
+            let data = {
+                seed: seed,
+                image: image.substring(22)
+            };
+
+            // Sending the image data to the parent window
+            vscode.postMessage({
+                command: 'save_testcase',
+                data: data
+            });
         }
     </script>
+    <style>
+        .primary-button {
+            background-color: var(--vscode-button-background);
+            color: var(--vscode-button-foreground);
+            border-color: var(--vscode-button-border);
+            cursor: pointer;
+            padding-top: 6px;
+            padding-bottom: 6px;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .primary-button:hover {
+            background-color: var(--vscode-button-hoverBackground);
+        }
+
+        .focus-area {
+            border: 2px solid var(--vscode-foreground);
+            display: inline-block;
+        }
+
+        table {
+            padding: 20px;
+            padding-top: 0px;
+        }
+
+        th {
+            border-bottom: 1.5px solid var(--vscode-foreground);
+            width: 75px;
+        }
+
+        td {
+            text-align: center;
+        }
+    </style>
 </head>
-<body>
-        <h2>RISC-V Screen View</h2>
+    <body>
+        <h2 style="display: inline-block;">RISC-V Screen View</h2>
+        <button onclick="saveTestCase()" class="primary-button" style="display: inline-block; margin-left: 20px;">Save as Testcase</button>
         <canvas id="screen" width="320" height="320"></canvas>
-</body>
+        <div class="focus-area">
+            <h2 style="display: inline; padding-left: 20px; padding-top: -4px;">Results</h2>
+            <h2 style="display: inline; padding-left: 20px; padding-top: -4px; color: var(--vscode-descriptionForeground)" id="stats-status">Still Running</h2>
+            <table>
+                <tr>
+                    <th>DI</th>
+                    <th>SI</th>
+                    <th>Registers</th>
+                    <th>Memory</th>
+                </tr>
+                <tr>
+                    <td id="stats-di">0</td>
+                    <td id="stats-si">0</td>
+                    <td id="stats-registers">0</td>
+                    <td id="stats-memory">0</td>
+            </table>
+        </div>
+    </body>
 </html>
