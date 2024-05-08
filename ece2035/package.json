@@ -3,7 +3,7 @@
   "displayName": "ECE2035",
   "description": "VS Code Companion Extension for Georgia Tech ECE 2035",
   "publisher": "GatechECE2035",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "engines": {
     "vscode": "^1.75.0"
   },
@@ -126,10 +126,12 @@
       }
     ],
     "views": {
-      "test": [{
-        "id": "riscvtestcases",
-        "name": "RISC-V Testcases"
-      }]
+      "test": [
+        {
+          "id": "riscvtestcases",
+          "name": "RISC-V Testcases"
+        }
+      ]
     },
     "menus": {
       "view/item/context": [
