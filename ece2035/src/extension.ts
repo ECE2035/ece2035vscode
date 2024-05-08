@@ -14,13 +14,17 @@ import { setUpDevEnvironment } from './devEnvironment';
 
 import { TestCasesManager } from './testcases/testCaseExplorer';
 import { ScreenManager } from './screenManager';
+import { TestCase } from './testcases/testCase';
 
 const disposables: vscode.Disposable[] = [];
 var globalContext: vscode.ExtensionContext;
 var screenManager: ScreenManager;
+var testCasesManager: TestCasesManager;
+var currentSeed: number = 0;
+var showingTestCase: TestCase | undefined;
 
 const useLocalEmulator = false; // !! IMPORTANT !! Set this to FALSE before deploying the extension.
-const localEmulatorPath = "C:\\Users\\dcoop\\github\\RISC-V-Emulator-New\\riscvemulator.exe";
+const localEmulatorPath = "C:\\Users\\dcoop\\github\\RISC-V-Emulator-Official\\riscvemulator.exe";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -41,13 +45,15 @@ export function activate(context: vscode.ExtensionContext) {
 		screenManager.openScreenPanel();
 	});
 
-	const testCasesManager = new TestCasesManager();
+	testCasesManager = new TestCasesManager(context, useLocalEmulator, localEmulatorPath);
+	testCasesManager.updatedResultCallback = newTestResult;
 
 	let newAssignmentCommand = vscode.commands.registerCommand('ece2035.newAssignment', setupDevEnvironmentCommand);
 	let runTestCaseCommand = vscode.commands.registerCommand('ece2035.runTestCase', runTestCase);
 	let debugTestCaseCommand = vscode.commands.registerCommand('ece2035.debugTestCase', debugTestCase);
 	let deleteTestCaseCommand = vscode.commands.registerCommand('ece2035.deleteTestCase', deleteTestCase);
-	let viewTestCaseCommand = vscode.commands.registerCommand('ece2035.viewTestCase', testCasesManager.viewTestCaseHandler);
+	let viewTestCaseCommand = vscode.commands.registerCommand('ece2035.viewTestCase', viewTestCase);
+	let runAllTestCasesCommand = vscode.commands.registerCommand('ece2035.runAllTestCases', runAllTestCases);
 
 	const configProvider = new DebugConfigurationProvider();
     const descriptionFactory = new DebugDescriptorFactory(context, useLocalEmulator, localEmulatorPath);
@@ -67,7 +73,24 @@ export function activate(context: vscode.ExtensionContext) {
 		console.log("Received event: " + event.event);
 		if (event.event === "riscv_screen") {
 			screenManager.sendScreenMessage("screen_update", event.body);
+
+			if (event.body.status === "passed") {
+				testCasesManager.reportUpdatedStatus(currentSeed.toString(), "pass", {
+					di: event.body.stats.di,
+					si: event.body.stats.si,
+					reg: event.body.stats.reg,
+					mem: event.body.stats.mem
+				});
+			} else if (event.body.status === "failed") {
+				testCasesManager.reportUpdatedStatus(currentSeed.toString(), "fail", {
+					di: event.body.stats.di,
+					si: event.body.stats.si,
+					reg: event.body.stats.reg,
+					mem: event.body.stats.mem
+				});
+			}
 		} else if (event.event === "riscv_context") {
+			currentSeed = event.body.seed;
 			screenManager.sendScreenMessage("context_update", event.body);
 		}
 	});
@@ -119,14 +142,35 @@ function setupDevEnvironmentCommand() {
 }
 
 function runTestCase(item: any) {
-	// TODO: Implement this function
 	console.log("Running test case: " + item.description);
+	testCasesManager.runTestCaseHandler(item);
 }
 
-function debugTestCase() {
-	// TODO: Implement this function
+function debugTestCase(item: any) {
+	console.log("Debugging test case: " + item.description);
+	testCasesManager.debugTestCaseHandler(item);
 }
 
-function deleteTestCase() {
-	// TODO: Implement this function
+function runAllTestCases() {
+	testCasesManager.handleRunAllTestCases();
+}
+
+function deleteTestCase(item: any) {
+	console.log("Deleting test case: " + item.description);
+	testCasesManager.deleteTestCase(item);
+}
+
+function viewTestCase(item: any) {
+	showingTestCase = item;
+	screenManager.showTestCase(item);
+}
+
+function newTestResult(item: TestCase) {
+	if (!showingTestCase) {
+		return;
+	}
+
+	if (item.description === showingTestCase.description && screenManager.getMode() === "past"){
+		viewTestCase(item);
+	}
 }

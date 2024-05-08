@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Screen View</title>
+    <meta
+    http-equiv="Content-Security-Policy"
+    content="default-src 'none'; img-src vscode-webview-resource: https:; script-src 'unsafe-inline' vscode-resource; style-src vscode-resource: 'unsafe-inline' http: https:;"
+    />
     <script>
         var socket = null;
         var seed = "";
@@ -11,6 +15,17 @@
         function handleUpdateScreen(data) {
             console.log("message recieved! width:", data.width, "height:", data.height, "updates:", data.updates.length);
             let canvas = document.getElementById("screen");
+            let img = document.getElementById("pastScreen");
+
+            if (img.hidden == false) {
+                img.hidden = true;
+                canvas.hidden = false;
+                let saveButton = document.getElementById("save_button");
+                saveButton.className = "primary-button";
+                saveButton.hidden = false;
+                saveButton.disabled = false;
+                saveButton.style = "display: inline-block; margin-left: 20px;";
+            }
 
             if (canvas.width != data.width || canvas.height != data.height) {
                 canvas.width = data.width;
@@ -39,17 +54,59 @@
             }
 
             // updating stats
-            document.getElementById("stats-di").innerText = data.stats.di;
-            document.getElementById("stats-si").innerText = data.stats.si;
-            document.getElementById("stats-registers").innerText = data.stats.reg;
-            document.getElementById("stats-memory").innerText = data.stats.mem;
+            updateStats(data.stats, data.status);
+        }
 
-            if (data.status == "passed") {
+        function showPastScreen(data) {
+            let img = document.getElementById("pastScreen");
+            let canvas = document.getElementById("screen");
+            let saveButton = document.getElementById("save_button");
+            saveButton.className = "hidden";
+            saveButton.hidden = true;
+            saveButton.disabled = true;
+            saveButton.style = "opacity: 0;"
+
+            var newImg = new Image();
+            let srcUrl = data.image;
+            console.log("url", srcUrl);
+
+            newImg.onload = function() {
+                var height = newImg.height;
+                var width = newImg.width;
+                img.width = width;
+                img.height = height;
+
+                canvas.hidden = true;
+                img.src = srcUrl;
+                img.hidden = false;
+                updateStats(data.stats, data.status);
+            }
+
+            newImg.src = srcUrl;
+        }
+
+        function updateStats(stats, status) {
+            if (stats.di == undefined) {
+                stats.di = "??";
+                stats.si = "??";
+                stats.reg = "??";
+                stats.mem = "??";
+            }
+
+            document.getElementById("stats-di").innerText = stats.di;
+            document.getElementById("stats-si").innerText = stats.si;
+            document.getElementById("stats-registers").innerText = stats.reg;
+            document.getElementById("stats-memory").innerText = stats.mem;
+
+            if (status == "passed" || status == "pass") {
                 document.getElementById("stats-status").innerText = "Passed";
                 document.getElementById("stats-status").style.color = "green";
-            } else if (data.status == "failed") {
+            } else if (status == "failed" || status == "fail") {
                 document.getElementById("stats-status").innerText = "Failed";
                 document.getElementById("stats-status").style.color = "var(--vscode-errorForeground)";
+            } else if (status == "unknown") {
+                document.getElementById("stats-status").innerText = "Not Run";
+                document.getElementById("stats-status").style.color = "var(--vscode-descriptionForeground)";
             } else {
                 document.getElementById("stats-status").innerText = "Still Running";
                 document.getElementById("stats-status").style.color = "var(--vscode-descriptionForeground)";
@@ -61,6 +118,9 @@
             switch (message.command) {
             case 'screen_update':
                 handleUpdateScreen(message.data);
+                break;
+            case 'show_past_screen':
+                showPastScreen(message.data);
                 break;
             case 'context_update':
                 seed = message.data.seed;
@@ -120,12 +180,19 @@
         td {
             text-align: center;
         }
+
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
     <body>
         <h2 style="display: inline-block;">RISC-V Screen View</h2>
-        <button onclick="saveTestCase()" class="primary-button" style="display: inline-block; margin-left: 20px;">Save as Testcase</button>
-        <canvas id="screen" width="320" height="320"></canvas>
+        <button onclick="saveTestCase()" id="save_button" class="primary-button" style="display: inline-block; margin-left: 20px;">Save as Testcase</button>
+        <div>
+            <canvas id="screen" width="320" height="320"></canvas>
+            <img width="320" height="320" hidden="true" id="pastScreen"/>
+        </div>
         <div class="focus-area">
             <h2 style="display: inline; padding-left: 20px; padding-top: -4px;">Results</h2>
             <h2 style="display: inline; padding-left: 20px; padding-top: -4px; color: var(--vscode-descriptionForeground)" id="stats-status">Still Running</h2>

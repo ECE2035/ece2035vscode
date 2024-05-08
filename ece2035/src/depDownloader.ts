@@ -6,7 +6,7 @@ import { deactivateLanguageClient } from './languageClient/languageClient';
 const baseUrl = "https://ece2035vscode.s3.us-east-2.amazonaws.com/";
 
 export function checkDependencies(context : vscode.ExtensionContext) {
-    getApi().then((api) => {
+    getApi().then((api: any) => {
         // getting latest version string
         api.downloadFile(vscode.Uri.parse(baseUrl + "version.txt"), "riscv-version.txt", context).then((fileUri: vscode.Uri) => {
             // read the file

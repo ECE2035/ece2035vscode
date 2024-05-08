@@ -5,7 +5,8 @@ export class TestCase extends vscode.TreeItem {
     constructor(
         public readonly label: string,
         public readonly description: string,
-        public status: string = 'unknown'
+        public status: string = 'unknown',
+        public stats: Object = {},
     ) {
         super(label);
 
@@ -27,6 +28,7 @@ export class TestCase extends vscode.TreeItem {
     }
 
     updateIcon(status: string) {
+        this.status = status;
         if (status === 'pass') {
             // green
             this.iconPath = {
@@ -46,5 +48,18 @@ export class TestCase extends vscode.TreeItem {
                 dark: vscode.Uri.file(path.join(__dirname, '../', '../', 'resources', 'dark', 'status-unknown.svg'))
             };
         }
+    }
+
+    getImagePath() {
+        let workspaceFolders = vscode.workspace.workspaceFolders;
+        if (!workspaceFolders) {
+            vscode.window.showErrorMessage("No workspace is opened. Please open a workspace to view test cases.");
+            return;
+        }
+
+        let workspaceRoot = workspaceFolders[0].uri.fsPath;
+        let testCasesFolder = path.join(workspaceRoot, ".vscode", "testcases");
+        let testCasePath = path.join(testCasesFolder, this.label + "_" + this.description + ".png");
+        return testCasePath;
     }
 }

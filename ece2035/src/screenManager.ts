@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as vscode from 'vscode';
 import * as fs from 'fs';
+import { TestCase } from './testcases/testCase';
 
 export class ScreenManager {
     private screenOpened = false;
@@ -8,8 +9,11 @@ export class ScreenManager {
     private screenPanel: vscode.WebviewPanel | undefined;
     private commandHandlers: Map<string, (data: any) => void> = new Map();
 
+    private mode: string;
+
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
+        this.mode = "idle";
     }
 
     public openScreenPanel() {
@@ -57,6 +61,7 @@ export class ScreenManager {
     }
 
     public sendScreenMessage(command: string, data: any) {
+        this.mode = "active";
         if (this.screenPanel) {
             this.screenPanel.webview.postMessage({ command: command, data: data });
         }
@@ -68,6 +73,29 @@ export class ScreenManager {
 
     public removeCommandHandler(command: string) {
         this.commandHandlers.delete(command);
+    }
+
+    public showTestCase(testCase: TestCase) {
+        this.openScreenPanel();
+        if (this.screenPanel) {
+            let workspaceFolders = vscode.workspace.workspaceFolders;
+
+            let data = {
+                image: this.screenPanel.webview.asWebviewUri(vscode.Uri.file(testCase.getImagePath()!)).toString(),
+                stats: testCase.stats,
+                status: testCase.status,
+            }
+            this.screenPanel.webview.postMessage({ command: "show_past_screen", data: data });
+            this.mode = "past";
+        }
+    }
+
+    public getMode() {
+        if (!this.screenOpened) {
+            return "closed";
+        }
+
+        return this.mode;
     }
 
     private setWebviewContent() {
