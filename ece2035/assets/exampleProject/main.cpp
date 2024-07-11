@@ -17,6 +17,11 @@ void ecall_handler(Registers* registers) {
     // By convention, the ecall number is stored in register a7.
     if (registers->a7 == 1234) {
         printfEcallHandler(registers);
+
+	// if leave out, test case will have "Still Running" status
+	// move this to ecall handler that checks student answer and
+	// replace "true" with result of verifying the answer:
+	set_solution_validity(true); 
     }
 }
 
