@@ -14,7 +14,7 @@ export class TestCaseExecutor {
         const { exec } = require('child_process');
 
         let seedStr = seeds.join(",");
-        let cmd = `${this.binaryPath} runBatch ${assemblyPath} ${assignmentPath} ${seedStr}`;
+        let cmd = `"${this.binaryPath}" runBatch "${assemblyPath}" "${assignmentPath}" "${seedStr}"`;
 
         exec(cmd, (error: any, stdout: any, stderr: any) => {
             if (error) {

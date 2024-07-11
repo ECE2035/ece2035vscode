@@ -6,6 +6,17 @@
             "command": "make",
             "args": ["student_assignment"],
             "problemMatcher": [],
+	    "presentation": {
+	        // only reveal the task's integ. terminal if there's an error
+		"reveal": "silent",
+		// Problems panel revealed when there's a problem
+		"revealProblems": "onProblem",
+		"clear": true, // clear terminal before task is run
+		"focus": true, //terminal takes input focus after task runs
+		"panel": "new", // every exec of task uses new clean terminal
+		"showReuseMessage": false, // suppress 'Press any key' msg
+		"close": true // close terminal when task exits
+	    }
         }
     ],
     "version": "2.0.0"
