@@ -15,16 +15,40 @@ export class TestCaseExecutor {
 
         let seedStr = seeds.join(",");
         let cmd = `"${this.binaryPath}" runBatch "${assemblyPath}" "${assignmentPath}" "${seedStr}"`;
-
         exec(cmd, (error: any, stdout: any, stderr: any) => {
             if (error) {
                 console.error(`exec error: ${error}`);
                 return;
             }
+            // added code to extract out json substrings based on { } delimiters
+            // rather than /n which doesn't always separate consecutive json strings)
+            var getDelimiterIndices = (s:string, t1:string, t2:string) => {
+                return[...s].flatMap((char, i) => (((char === t1) || (char === t2)) ? i : []));
+            };
+            let curlyIndices = getDelimiterIndices(stdout, '{','}');
+            let topOpen = curlyIndices[0];
+            let count = 0;
+            let lines = [];
+            for (let i = 0; i < curlyIndices.length; i++){
+                let currentIdx = curlyIndices[i];
+                count += ((stdout.charAt(currentIdx) === '{') ? 1 : -1);
+                if (count === 0){
+                    lines.push(stdout.substring(topOpen, currentIdx+1));
+                    if (i+1 < curlyIndices.length){
+                        topOpen = curlyIndices[i+1];
+                    }
+                }
 
-            let lines = stdout.split("\n");
+	    }
             for (let i = 0; i < lines.length; i++) {
-                let lineObj = JSON.parse(lines[i]);
+                // skip lines that are empty or not in the form of a json string
+                let lineObj = lines[i];
+                try {
+                    lineObj = JSON.parse(lines[i]);
+                } catch (e) {
+                    //console.log("failed to parse line", i);
+                    continue;
+                }
                 if (lineObj.type === "error") {
                     // show this error in a message box
                     vscode.window.showErrorMessage(lineObj.body);
