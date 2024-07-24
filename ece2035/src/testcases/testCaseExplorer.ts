@@ -38,8 +38,10 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
             let file = files[i];
             if (file.endsWith(".png")) {
                 let parts = file.split("_");
-                let title = parts[0];
-                let seed = parts[1].split(".")[0];
+                // destructively pop off the last string and split by '.' to separate the seed from '.png' 
+                let seed = parts.pop().split(".")[0];
+                // reconstruct the original title of the test case
+                let title = ((parts.length > 1) ? parts.join("_") : parts[0]);
                 this.testCases.push(new TestCase(title, seed, "unknown"));
             }
         }
@@ -114,10 +116,8 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
         } else {
             binPath = this.localEmulatorPath;
         }
-
         const executor = new TestCaseExecutor(binPath, (result: TestCaseExecutionResult) => {
             // updating the status of the test case
-            console.log("result", result);
             for (let i = 0; i < this.testCases.length; i++) {
                 let testCase = this.testCases[i];
                 if (testCase.description === seed) {
@@ -137,7 +137,6 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
                 }
             }
         });
-
         executor.execute(assignmentCode, assemblyCode, [seed]);
     }
 
@@ -168,7 +167,6 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
 
         const executor = new TestCaseExecutor(binPath, (result: TestCaseExecutionResult) => {
             // updating the status of the test case
-            console.log("result", result);
             for (let i = 0; i < this.testCases.length; i++) {
                 let testCase = this.testCases[i];
                 if (testCase.description === result.seed.toString()) {
@@ -209,8 +207,7 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
             vscode.window.showErrorMessage("No workspace is opened. Please open a workspace to debug test cases.");
             return;
         }
-
-        const workspaceConfig = vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders![0])
+        const workspaceConfig = vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders![0]);
         const launchConfig = workspaceConfig["configurations"][0];
 
         // starting debug session
