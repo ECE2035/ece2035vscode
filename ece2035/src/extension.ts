@@ -24,7 +24,7 @@ var currentSeed: number = 0;
 var showingTestCase: TestCase | undefined;
 
 const useLocalEmulator = false; // !! IMPORTANT !! Set this to FALSE before deploying the extension.
-const localEmulatorPath = "C:\\Users\\dcoop\\github\\RISC-V-Emulator-Official\\riscvemulator.exe";
+const localEmulatorPath = "C:\\Users\\Linda Wills\\Documents\\GitHub\\RISC-V-Emulator\\riscvemulator.exe";
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
