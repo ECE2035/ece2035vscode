@@ -1,0 +1,83 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.TestCaseExecutionResult = exports.TestCaseExecutor = void 0;
+const vscode = require("vscode");
+class TestCaseExecutor {
+    constructor(binaryPath, resultCallback) {
+        this.binaryPath = binaryPath;
+        this.resultCallback = resultCallback;
+    }
+    execute(assignmentPath, assemblyPath, seeds) {
+        // running the binary and capturing stdout
+        const { exec } = require('child_process');
+        let seedStr = seeds.join(",");
+        let cmd = `"${this.binaryPath}" runBatch "${assemblyPath}" "${assignmentPath}" "${seedStr}"`;
+        console.log("cmd: %s", cmd);
+        exec(cmd, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`exec error: ${error}`);
+                return;
+            }
+            // *** BUG: splitting stdout on "/n" is not sufficient: 
+            // *** individual json strings are not parsed correctly
+            // *** b/c consecutive json strings are not always separated by \n,
+            // *** Hack: replace }{ w/ }###{ in stdout before split so that 
+            // *** "###" can be used as a separator (along with "\n").
+            // *** There's still an issue with json strings immediately 
+            // *** followed by an output string that this doesn't solve. e.g., "}Content-Length: 98"
+            // *** Is there a better way to get the json results than parsing them from stdout?
+            //console.log("BEFORE", stdout);
+            stdout = stdout.replace(/\}\{/, "\}###\{");
+            stdout = stdout.replace(/\}Content/, "\}###Content");
+            let lines = stdout.split(/[\n]+|###/);
+            //console.log("lines.length", lines.length);
+            //console.log("lines AFTER", lines);
+            for (let i = 0; i < lines.length; i++) {
+                // skip lines that are empty or not in the form of a json string
+                let lineObj = lines[i];
+                try {
+                    lineObj = JSON.parse(lines[i]);
+                }
+                catch (e) {
+                    //console.log("failed to parse line", i);
+                    continue;
+                }
+                if (lineObj.type === "error") {
+                    // show this error in a message box
+                    vscode.window.showErrorMessage(lineObj.body);
+                }
+                else if (lineObj.type === "result") {
+                    let seed = lineObj.body.seed;
+                    let status = lineObj.body.passed ? "pass" : "fail";
+                    let di = lineObj.body.di;
+                    let si = lineObj.body.si;
+                    let reg = lineObj.body.regs;
+                    let mem = lineObj.body.mem;
+                    let numErrors = lineObj.body.numErrors;
+                    let b64Img = lineObj.body.img;
+                    let result = new TestCaseExecutionResult(seed, status, di, si, reg, mem, b64Img, numErrors);
+                    console.log("status", status);
+                    this.resultCallback(result);
+                }
+            }
+        });
+    }
+}
+exports.TestCaseExecutor = TestCaseExecutor;
+class TestCaseExecutionResult {
+    constructor(seed, status, di, si, reg, mem, b64Img, numErrors) {
+        this.seed = seed;
+        this.status = status;
+        this.di = di;
+        this.si = si;
+        this.regUsed = reg;
+        this.memUsed = mem;
+        this.b64Img = b64Img;
+        this.numErrors = numErrors;
+    }
+    getPNGImageAsB64() {
+        return this.b64Img;
+    }
+}
+exports.TestCaseExecutionResult = TestCaseExecutionResult;
+//# sourceMappingURL=testCaseExecution.js.map
