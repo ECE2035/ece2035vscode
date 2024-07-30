@@ -17,7 +17,7 @@ var screenManager;
 var testCasesManager;
 var currentSeed = 0;
 var showingTestCase;
-const useLocalEmulator = true; // !! IMPORTANT !! Set this to FALSE before deploying the extension.
+const useLocalEmulator = false; // !! IMPORTANT !! Set this to FALSE before deploying the extension.
 const localEmulatorPath = "C:\\Users\\Linda Wills\\Documents\\GitHub\\RISC-V-Emulator\\riscvemulator.exe";
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
