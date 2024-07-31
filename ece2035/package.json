@@ -16,7 +16,6 @@
   "main": "./out/extension.js",
   "files": [
     "assets/",
-    "out/",
     "resources/"
   ],
   "contributes": {
