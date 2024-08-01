@@ -13,7 +13,7 @@
   "activationEvents": [
     "onDebugResolve:riscv-vm"
   ],
-  "main": "./out/extension.js",
+  "main": "./dist/extension.js",
   "files": [
     "assets/",
     "resources/"
