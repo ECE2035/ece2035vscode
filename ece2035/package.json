@@ -14,10 +14,6 @@
     "onDebugResolve:riscv-vm"
   ],
   "main": "./out/extension.js",
-  "files": [
-    "assets/",
-    "resources/"
-  ],
   "contributes": {
     "commands": [
       {
