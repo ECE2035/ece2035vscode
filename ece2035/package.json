@@ -154,6 +154,19 @@
           "group": "navigation"
         }
       ]
+    },
+    "configuration": {
+      "title": "RISC-V",
+      "properties": {
+        "riscv.emulatorPath": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "(Optional) Specify an explicit emulator executable path to use for debugging."
+        }
+      }
     }
   },
   "scripts": {
