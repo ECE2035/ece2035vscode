@@ -4,9 +4,9 @@ The companion extension to GaTech ECE 2035 Programming HW/SW Systems class. Supp
 
 ## Related Repositories
 
-Emulator repository: [Here](https://github.gatech.edu/ECEInnovation/RISC-V-Emulator)
+Emulator repository: [Here](https://github.com/danielcbailey/RISC-V-Emulator)
 
-Example assignment repository: [Here](https://github.gatech.edu/ECEInnovation/2035-Emulator-CPP-Base)
+Example assignment repository: [Here](https://github.gatech.edu/ECEInnovation/RISCV-Assignments)
 
 ## Getting Started
 
@@ -16,7 +16,7 @@ Clone the repository and download/install Node.js on your computer. You can down
 
 **IMPORTANT:** You *must* have the RISC-V emulator built locally on your computer. To override the path of the emulator executable used:
 
-1. Go to the extension's **Settings** by navigating to (*File* -> *Preferences* -> *Settings*) and searching for `RISC-V`: 
+1. Run the extension and while in its development host, go to the extension's **Settings** by navigating to (*File* -> *Preferences* -> *Settings*) and searching for `RISC-V`: 
 
 ![emulatorpath](assets/emulatorsettings.png)
 
