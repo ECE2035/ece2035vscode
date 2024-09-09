@@ -23,12 +23,17 @@ var testCasesManager: TestCasesManager;
 var currentSeed: number = 0;
 var showingTestCase: TestCase | undefined;
 
-const useLocalEmulator = false; // !! IMPORTANT !! Set this to FALSE before deploying the extension.
-const localEmulatorPath = "C:\\Users\\Linda Wills\\Documents\\GitHub\\RISC-V-Emulator\\riscvemulator.exe";
+const configuration = vscode.workspace.getConfiguration("riscv");
+const emulatorPath: string = configuration.get("emulatorPath") || "";
+const useLocalEmulator = emulatorPath.length !== 0;
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+	if (useLocalEmulator) {
+		console.debug("Local emulator parameter found, overriding emulator path");
+	}
+
 	globalContext = context;
 	screenManager = new ScreenManager(context);
 
@@ -45,7 +50,7 @@ export function activate(context: vscode.ExtensionContext) {
 		screenManager.openScreenPanel();
 	});
 
-	testCasesManager = new TestCasesManager(context, useLocalEmulator, localEmulatorPath);
+	testCasesManager = new TestCasesManager(context, useLocalEmulator, emulatorPath);
 	testCasesManager.updatedResultCallback = newTestResult;
 
 	let newAssignmentCommand = vscode.commands.registerCommand('ece2035.newAssignment', setupDevEnvironmentCommand);
@@ -56,7 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
 	let runAllTestCasesCommand = vscode.commands.registerCommand('ece2035.runAllTestCases', runAllTestCases);
 
 	const configProvider = new DebugConfigurationProvider();
-    const descriptionFactory = new DebugDescriptorFactory(context, useLocalEmulator, localEmulatorPath);
+    const descriptionFactory = new DebugDescriptorFactory(context, useLocalEmulator, emulatorPath);
     disposables.push(vscode.debug.registerDebugAdapterDescriptorFactory("riscv-vm", descriptionFactory));
     disposables.push(vscode.debug.registerDebugConfigurationProvider("riscv-vm", configProvider));
 	console.log("activated");
@@ -65,7 +70,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(openCommand, newAssignmentCommand);
 	context.subscriptions.push(runTestCaseCommand, debugTestCaseCommand, deleteTestCaseCommand, viewTestCaseCommand);
-	activateLanguageClient(context, useLocalEmulator, localEmulatorPath);
+	activateLanguageClient(context, useLocalEmulator, emulatorPath);
 
 	context.subscriptions.push(vscode.window.registerTreeDataProvider('riscvtestcases', testCasesManager));
 
@@ -99,7 +104,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	screenManager.registerCommandHandler("save_testcase", (data) => {
 		// popup for the title
-		let title = vscode.window.showInputBox({ prompt: "Enter a title for the test case" }).then((title) => {
+		vscode.window.showInputBox({ prompt: "Enter a title for the test case" }).then((title) => {
 			if (!title) {
 				title = "Untitled Testcase";
 			}
