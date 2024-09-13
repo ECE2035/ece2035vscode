@@ -15,6 +15,8 @@ import { setUpDevEnvironment } from './devEnvironment';
 import { TestCasesManager } from './testcases/testCaseExplorer';
 import { ScreenManager } from './screenManager';
 import { TestCase } from './testcases/testCase';
+import { getResolvedLaunchConfig } from './utils';
+import { DEFAULT_LAUNCH_CONFIG } from './defaults';
 
 const disposables: vscode.Disposable[] = [];
 var globalContext: vscode.ExtensionContext;
@@ -60,15 +62,17 @@ export function activate(context: vscode.ExtensionContext) {
 	let viewTestCaseCommand = vscode.commands.registerCommand('ece2035.viewTestCase', viewTestCase);
 	let runAllTestCasesCommand = vscode.commands.registerCommand('ece2035.runAllTestCases', runAllTestCases);
 
+	let runCommand = vscode.commands.registerCommand("ece2035.runFile", runFile);
+
 	const configProvider = new DebugConfigurationProvider();
-    const descriptionFactory = new DebugDescriptorFactory(context, useLocalEmulator, emulatorPath);
-    disposables.push(vscode.debug.registerDebugAdapterDescriptorFactory("riscv-vm", descriptionFactory));
-    disposables.push(vscode.debug.registerDebugConfigurationProvider("riscv-vm", configProvider));
+	const descriptionFactory = new DebugDescriptorFactory(context, useLocalEmulator, emulatorPath);
+	disposables.push(vscode.debug.registerDebugAdapterDescriptorFactory("riscv-vm", descriptionFactory));
+	disposables.push(vscode.debug.registerDebugConfigurationProvider("riscv-vm", configProvider));
 	console.log("activated");
 
 	checkDependencies(context);
 
-	context.subscriptions.push(openCommand, newAssignmentCommand);
+	context.subscriptions.push(openCommand, newAssignmentCommand, runCommand, runAllTestCasesCommand);
 	context.subscriptions.push(runTestCaseCommand, debugTestCaseCommand, deleteTestCaseCommand, viewTestCaseCommand);
 	activateLanguageClient(context, useLocalEmulator, emulatorPath);
 
@@ -127,6 +131,12 @@ function debugStartedEvent(event: vscode.DebugSession) {
 	}
 }
 
+function runFile(uri: vscode.Uri) {
+	const config = getResolvedLaunchConfig()[0] || DEFAULT_LAUNCH_CONFIG;
+
+	vscode.debug.startDebugging(vscode.workspace.getWorkspaceFolder(uri), config);
+}
+
 function setupDevEnvironmentCommand() {
 	// prompt user for directory
 	const options: vscode.OpenDialogOptions = {
@@ -175,7 +185,7 @@ function newTestResult(item: TestCase) {
 		return;
 	}
 
-	if (item.description === showingTestCase.description && screenManager.getMode() === "past"){
+	if (item.description === showingTestCase.description && screenManager.getMode() === "past") {
 		viewTestCase(item);
 	}
 }
