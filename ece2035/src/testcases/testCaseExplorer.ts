@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { TestCase } from './testCase';
 import * as path from 'path';
 import { TestCaseExecutor, TestCaseExecutionResult } from './testCaseExecution';
+import { getResolvedLaunchConfig } from '../utils';
 
 export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
     private _onDidChangeTreeData: vscode.EventEmitter<TestCase | undefined> = new vscode.EventEmitter<TestCase | undefined>();
@@ -241,7 +242,7 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
                 return;
             }
         }
-    
+
     }
 
     public reportUpdatedStatus(seed: string, status: string, stats: any) {
@@ -254,43 +255,4 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
             }
         }
     }
-}
-
-// Function to manually resolve workspace folder variables
-function resolveVariables(config: any, folder: any, file: any) {
-    // Regex to find VS Code variables e.g., ${workspaceFolder}
-    const variablePatternWS = /\$\{workspaceFolder\}/g;
-    const variablePatternFile = /\$\{file\}/g;
-
-    // escaping the folder and file path strings
-    const escapedFolder = folder.uri.fsPath.replace(/\\/g, '\\\\');
-    const escapedFile = file.fsPath.replace(/\\/g, '\\\\');
-
-    // Serialize the configuration object to a string
-    let configString = JSON.stringify(config);
-
-    // Replace all occurrences of ${workspaceFolder}
-    configString = configString.replace(variablePatternWS, escapedFolder);
-    configString = configString.replace(variablePatternFile, escapedFile);
-
-    // Parse it back to an object
-    return JSON.parse(configString);
-}
-
-// Function to get and resolve launch configurations
-function getResolvedLaunchConfig() {
-    // Access the workspace configuration for 'launch'
-    const launchConfig = vscode.workspace.getConfiguration('launch', vscode.workspace.workspaceFolders![0]);
-
-    // Get the configurations array from the 'launch' configuration
-    const configs = launchConfig['configurations'];
-
-    const currFile = vscode.window.activeTextEditor?.document.uri;
-
-    if (configs && Array.isArray(configs)) {
-        // Iterate through configurations
-        return configs.map(config => resolveVariables(config, vscode.workspace.workspaceFolders![0], currFile));
-    }
-
-    return [];
 }
