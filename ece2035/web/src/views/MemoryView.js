@@ -1,53 +1,57 @@
 import { BYTES_PER_ROW } from "../App";
 
-export default function MemoryView({gp, baseAddress, memoryData, oldMemory}) {
+export default function MemoryView({ title, gp, baseAddress, memoryData, oldMemory, showInstructions, reverse }) {
   const rows = Math.ceil(memoryData.length / BYTES_PER_ROW);
 
-  return <>
+  let rowData =
+    [...Array(rows)].map((_, row) => {
+      const isInstruction = baseAddress + row * BYTES_PER_ROW < gp;
 
-    <h2 style={{ display: "inline-block" }}>RISC-V Memory View</h2>
+      if (isInstruction && !showInstructions) {
+        return <></>
+      }
 
-    <label class="vscode-checkbox">
-      <input id="show-instructions" type="checkbox" />
-      <div class="checkmark"></div>
-      <span>Show instructions</span>
-    </label>
-    <div class="hex-viewer">
-      {[...Array(rows)].map((_, row) => {
-        const isInstruction = baseAddress + row * BYTES_PER_ROW < gp;
+      return (
+        <div className='row'>
+          <span className='address'>{(baseAddress + row * BYTES_PER_ROW).toString().padStart(6, "0")}</span>
+          <div className='hex-values'>
+            {[...Array(BYTES_PER_ROW)].map((_, col) => {
+              const idx = row * BYTES_PER_ROW + col;
+              if (idx < memoryData.length) {
+                const value = memoryData[idx];
 
-        return (
-          <div className='row'>
-            <span className='address'>{(baseAddress + row * BYTES_PER_ROW).toString().padStart(6, "0")}</span>
-            <div className='hex-values'>
-              {[...Array(BYTES_PER_ROW)].map((_, col) => {
-                const idx = row * BYTES_PER_ROW + col;
-                if (idx < memoryData.length) {
-                  const value = memoryData[idx];
+                let hexIdentifier;
 
-                  let hexIdentifier;
-
-                  if (oldMemory.current[idx] !== value) {
-                    // different than last step, let's highlight it
-                    hexIdentifier = "hex-value-recently-changed";
-                    // oldMemory.current[idx] = value; 
-                  } else if (!isInstruction) {
-                    hexIdentifier = "hex-value";
-                  } else {
-                    hexIdentifier = "hex-value-instruction";
-                  }
-
-
-                  return (
-                    <span className={`${hexIdentifier} hex-value`}>{value.toString(16).padStart(2, "0")}</span>
-                  )
+                if (false && oldMemory.current[idx] !== value) {
+                  // different than last step, let's highlight it
+                  hexIdentifier = "hex-value-recently-changed";
+                  // oldMemory.current[idx] = value; 
+                } else if (!isInstruction) {
+                  hexIdentifier = "hex-value";
+                } else {
+                  hexIdentifier = "hex-value-instruction";
                 }
-                return <></>
-              })}
-            </div>
-          </div>);
-      })}
+
+                return (
+                  <span className={`${hexIdentifier} hex-value`}>{value.toString(16).padStart(2, "0")}</span>
+                )
+              }
+              return <></>
+            })}
+          </div>
+        </div>);
+    });
+
+  if (reverse) {
+    rowData = rowData.reverse();
+  }
+
+  return <div>
+    <h5>{title}</h5>
+
+    <div class="hex-viewer">
+      {rowData}
     </div>
 
-  </>
+  </div>
 }

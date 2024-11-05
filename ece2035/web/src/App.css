@@ -76,6 +76,8 @@ td {
 }
 
 .hex-viewer {
+  display: flex;
+  flex-direction: column;
   font-family: monospace;
   color: #d4d4d4;
   padding: 20px;
@@ -216,4 +218,15 @@ td {
 .vscode-checkbox input:focus + .checkmark {
   outline: 1px solid var(--vscode-focusBorder);
   outline-offset: 1px;
+}
+
+.flex-container {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (width >= 500px) {
+  .flex-container {
+    flex-direction: row;
+  }
 }

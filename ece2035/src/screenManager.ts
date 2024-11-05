@@ -6,7 +6,7 @@ import path = require('path');
 
 export class ScreenManager {
     private screenOpened = false;
-    private context :vscode.ExtensionContext;
+    private context: vscode.ExtensionContext;
     private screenPanel: vscode.WebviewPanel | undefined;
     private commandHandlers: Map<string, (data: any) => void> = new Map();
 
@@ -93,10 +93,16 @@ export class ScreenManager {
             let spAddress = parseInt(spAddressString, 16);
             let spStartMagicNumber = 0x7FFFFFF0;
 
-            const response = await session.customRequest('readMemory', {
+            const stackResponse = await session.customRequest('readMemory', {
                 memoryReference: '',
                 offset: spAddress, // hex of current sp
                 count: (spStartMagicNumber - spAddress) >> 2// retrieve all stack contents
+            });
+
+            const mainMemoryResponse = await session.customRequest('readMemory', {
+                memoryReference: '',
+                offset: 0, // hex of current sp
+                count: 1024, // retrieve all stack contents
             });
 
             // retrieve the gp register for color highlighting
@@ -106,13 +112,13 @@ export class ScreenManager {
 
 
 
-            await this.screenPanel?.webview.postMessage({ command: "read_memory", data: { base64: response.data, gp: registerValues.variables[0] }});
+            await this.screenPanel?.webview.postMessage({ command: "read_memory", data: { stackMemory: stackResponse.data, mainMemory: mainMemoryResponse.data, gp: registerValues.variables[0], sp: spAddress } });
 
-        } catch(err) {
-            
-            
+        } catch (err) {
+
+
             vscode.window.showErrorMessage(`Failed to read memory from debugger: ${err}`);
-            
+
         }
 
     }
@@ -179,6 +185,7 @@ export class ScreenManager {
         let cssSrc = this.screenPanel.webview.asWebviewUri(vscode.Uri.joinPath(this.context.extensionUri, "web", "dist", "index.css"));
 
         this.screenPanel.webview.html = `<!DOCTYPE html>
+        
         <html lang="en">
           <head>
             <link rel="stylesheet" href="${cssSrc}" />

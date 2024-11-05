@@ -1,3 +1,2 @@
-export default function ScreenView({memoryData, oldMemory}) {
-  return <></>
+export default function ScreenView({ gp, baseAddress, memoryData, oldMemory }) {
 }

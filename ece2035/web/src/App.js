@@ -1,8 +1,6 @@
-import logo from './logo.svg';
 import './App.css';
 import MemoryView from './views/MemoryView';
 import ScreenView from './views/ScreenView';
-import TestView from './views/TestView';
 import { useEffect, useRef, useState } from 'react';
 import { base64ToBytes } from './util/hexUtils';
 
@@ -58,15 +56,21 @@ function handleUpdateScreen(data) {
   // updateStats(data.stats, data.status);
 }
 
-let globalGp;
-
-function handleReadMemory({ base64, gp, setMemoryData, setGp }) {
+function handleReadMemory({ mainMemory, stackMemory, gp, sp, setMemoryData, setStackData, setGp, setSp }) {
   // data is base64, decode it
-  const decoded = base64ToBytes(base64);
+  const stackDecoded = base64ToBytes(stackMemory);
+  const memoryDecoded = base64ToBytes(mainMemory);
 
-  globalGp = gp["value"];
+  setMemoryData(memoryDecoded);
+  setStackData(stackDecoded);
+  setGp(gp["value"]);
+  setSp(sp);
 
-  updateHexViewer(decoded, globalGp, setMemoryData, setGp);
+  if (!initialized) {
+    initialized = true;
+  }
+
+  // updateHexViewer(decoded, globalGp, setMemoryData, setGp);
 }
 
 
@@ -99,7 +103,7 @@ function showPastScreen(data) {
 }
 
 function updateStats(stats, status) {
-  if (stats.di == undefined) {
+  if (stats.di === undefined) {
     stats.di = "??";
     stats.si = "??";
     stats.reg = "??";
@@ -111,14 +115,14 @@ function updateStats(stats, status) {
   document.getElementById("stats-registers").innerText = stats.reg;
   document.getElementById("stats-memory").innerText = stats.mem;
 
-  if (status == "passed" || status == "pass") {
+  if (status === "passed" || status === "pass") {
     document.getElementById("stats-status").innerText = "Passed";
     document.getElementById("stats-status").style.color = "green";
-  } else if (status == "failed" || status == "fail") {
+  } else if (status === "failed" || status === "fail") {
     document.getElementById("stats-status").innerText = "Failed";
     document.getElementById("stats-status").style.color =
       "var(--vscode-errorForeground)";
-  } else if (status == "unknown") {
+  } else if (status === "unknown") {
     document.getElementById("stats-status").innerText = "Not Run";
     document.getElementById("stats-status").style.color =
       "var(--vscode-descriptionForeground)";
@@ -150,36 +154,31 @@ function saveTestCase() {
 
 let initialized = false;
 
-function updateHexViewer(bytes, gp, setMemoryData, setGp) {
-  setMemoryData(bytes);
-  setGp(gp);
-
-  if (!initialized) {
-    initialized = true;
-  }
-}
-
-
 function App() {
   const oldMemory = useRef(new Array(128).fill(0));
+  const [stackData, setStackData] = useState(new Array(128).fill(0));
   const [memoryData, setMemoryData] = useState(new Array(128).fill(0));
   const [gp, setGp] = useState(0);
+  const [sp, setSp] = useState(0);
   const [showInstructions, setShowInstructions] = useState(false);
 
+  console.log(showInstructions);
+
   useEffect(() => {
-    // listen for show instructions
-    let showInstructionsCheckmark = document.getElementById("show-instructions");
-
-    showInstructionsCheckmark.addEventListener('change', (event) => {
-      setShowInstructions(!showInstructions);
-    })
-
-
     window.addEventListener("message", (event) => {
       const message = event.data; // Received message
       switch (message.command) {
         case "read_memory":
-          handleReadMemory({ base64: message.data.base64, gp: message.data.gp, setMemoryData: setMemoryData, setGp: setGp });
+          handleReadMemory({
+            mainMemory: message.data.mainMemory,
+            stackMemory: message.data.stackMemory,
+            gp: message.data.gp,
+            sp: message.data.sp,
+            setMemoryData: setMemoryData,
+            setStackData: setStackData,
+            setGp: setGp,
+            setSp: setSp,
+          });
           break;
         case "screen_update":
           handleUpdateScreen(message.data);
@@ -195,14 +194,30 @@ function App() {
       }
     });
 
-    //generateHexView();
   }, [])
 
   const baseAddress = 0;
 
+  const onInstructionToggle = () => {
+    setShowInstructions(!showInstructions);
+  }
+
   return (
     <>
-      <MemoryView gp={gp} baseAddress={baseAddress} memoryData={memoryData} oldMemory={oldMemory}/> 
+      <h2>RISC-V Memory View</h2>
+      <label class="vscode-checkbox">
+        <input onChange={() => onInstructionToggle()} id="show-instructions" type="checkbox" />
+        <div class="checkmark"></div>
+        <span>Show instructions</span>
+      </label>
+      <div className='flex-container'>
+        <div>
+          <MemoryView showInstructions={showInstructions} title={"Memory"} gp={gp} baseAddress={baseAddress} memoryData={memoryData} oldMemory={oldMemory} />
+        </div>
+        <div>
+          <MemoryView reverse={true} showInstructions={showInstructions} title={"Stack"} gp={gp} baseAddress={sp} memoryData={stackData} oldMemory={oldMemory} />
+        </div>
+      </div>
     </>
   );
 }
