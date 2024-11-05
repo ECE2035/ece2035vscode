@@ -30,9 +30,9 @@
         "icon": "$(play)"
       },
       {
-          "command": "ece2035.runFile",
-          "title": "Run RISCV File",
-          "icon": "$(play)"
+        "command": "ece2035.runFile",
+        "title": "Run RISCV File",
+        "icon": "$(play)"
       },
       {
         "command": "ece2035.debugTestCase",
