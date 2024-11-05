@@ -11,6 +11,8 @@ let seed = "";
 // eslint-disable-next-line no-undef
 const vscode = acquireVsCodeApi();
 
+export const BYTES_PER_ROW = 4;
+
 function handleUpdateScreen(data) {
   let canvas = document.getElementById("screen");
   // let img = document.getElementById("pastScreen");
@@ -58,13 +60,13 @@ function handleUpdateScreen(data) {
 
 let globalGp;
 
-function handleReadMemory({ base64, gp, setMemoryData }) {
+function handleReadMemory({ base64, gp, setMemoryData, setGp }) {
   // data is base64, decode it
   const decoded = base64ToBytes(base64);
 
   globalGp = gp["value"];
 
-  updateHexViewer(decoded, globalGp, setMemoryData);
+  updateHexViewer(decoded, globalGp, setMemoryData, setGp);
 }
 
 
@@ -81,7 +83,7 @@ function showPastScreen(data) {
   let srcUrl = data.image;
   console.log("url", srcUrl);
 
-  newImg.onload = function() {
+  newImg.onload = function () {
     let height = newImg.height;
     let width = newImg.width;
     img.width = width;
@@ -148,8 +150,9 @@ function saveTestCase() {
 
 let initialized = false;
 
-function updateHexViewer(bytes, gp, setMemoryData) {
+function updateHexViewer(bytes, gp, setMemoryData, setGp) {
   setMemoryData(bytes);
+  setGp(gp);
 
   if (!initialized) {
     initialized = true;
@@ -160,6 +163,7 @@ function updateHexViewer(bytes, gp, setMemoryData) {
 function App() {
   const oldMemory = useRef(new Array(128).fill(0));
   const [memoryData, setMemoryData] = useState(new Array(128).fill(0));
+  const [gp, setGp] = useState(0);
   const [showInstructions, setShowInstructions] = useState(false);
 
   useEffect(() => {
@@ -175,7 +179,7 @@ function App() {
       const message = event.data; // Received message
       switch (message.command) {
         case "read_memory":
-          handleReadMemory({base64: message.data.base64, gp: message.data.gp, setMemoryData: setMemoryData});
+          handleReadMemory({ base64: message.data.base64, gp: message.data.gp, setMemoryData: setMemoryData, setGp: setGp });
           break;
         case "screen_update":
           handleUpdateScreen(message.data);
@@ -194,57 +198,11 @@ function App() {
     //generateHexView();
   }, [])
 
-  const bytesPerRow = 4;
   const baseAddress = 0;
-
-  const gp = 0;
-  const rows = Math.ceil(memoryData.length / bytesPerRow);
 
   return (
     <>
-      <h2 style={{display: "inline-block"}}>RISC-V Memory View</h2>
-
-      <label class="vscode-checkbox">
-        <input id="show-instructions" type="checkbox" />
-        <div class="checkmark"></div>
-        <span>Show instructions</span>
-      </label>
-      <div class="hex-viewer">
-          {[...Array(rows)].map((_, row) => {
-            const isInstruction = baseAddress + row * bytesPerRow < gp;
-
-            return (
-            <div className='row'>
-              <span className='address'>{(baseAddress + row * bytesPerRow).toString().padStart(6, "0")}</span>
-              <div className='hex-values'>
-                {[...Array(bytesPerRow)].map((_, col) => {
-                    const idx = row * bytesPerRow + col;
-                    if (idx < memoryData.length) {
-                      const value = memoryData[idx];
-
-                      let hexIdentifier;
-
-                      if (oldMemory.current[idx] !== value) {
-                        // different than last step, let's highlight it
-                        hexIdentifier = "hex-value-recently-changed";
-                        // oldMemory.current[idx] = value; 
-                      } else if (!isInstruction) {
-                        hexIdentifier = "hex-value";
-                      } else {
-                        hexIdentifier = "hex-value-instruction";
-                      }
-
-
-                      return (
-                        <span className={`${hexIdentifier} hex-value`}>{value.toString(16).padStart(2, "0")}</span>
-                      )
-                    }
-                    return <></>
-                })}
-              </div>
-            </div>);
-})}
-        </div>
+      <MemoryView gp={gp} baseAddress={baseAddress} memoryData={memoryData} oldMemory={oldMemory}/> 
     </>
   );
 }
