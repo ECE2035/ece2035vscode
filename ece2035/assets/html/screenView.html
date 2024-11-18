@@ -91,12 +91,14 @@
                 stats.si = "??";
                 stats.reg = "??";
                 stats.mem = "??";
+                stats.pc = "??";
             }
 
             document.getElementById("stats-di").innerText = stats.di;
             document.getElementById("stats-si").innerText = stats.si;
             document.getElementById("stats-registers").innerText = stats.reg;
             document.getElementById("stats-memory").innerText = stats.mem;
+            document.getElementById("stats-pc").innerText = stats.pc;
 
             if (status == "passed" || status == "pass") {
                 document.getElementById("stats-status").innerText = "Passed";
@@ -106,6 +108,9 @@
                 document.getElementById("stats-status").style.color = "var(--vscode-errorForeground)";
             } else if (status == "unknown") {
                 document.getElementById("stats-status").innerText = "Not Run";
+                document.getElementById("stats-status").style.color = "var(--vscode-descriptionForeground)";
+            } else if (status == "finished") { // for RISC-V asm w/out solution checker
+                document.getElementById("stats-status").innerText = "Finished";
                 document.getElementById("stats-status").style.color = "var(--vscode-descriptionForeground)";
             } else {
                 document.getElementById("stats-status").innerText = "Still Running";
@@ -208,6 +213,11 @@
                     <td id="stats-si">0</td>
                     <td id="stats-registers">0</td>
                     <td id="stats-memory">0</td>
+                </tr>
+                <tr>
+                    <td style="text-align:right">PC:</td>
+                    <td id="stats-pc">0</td>
+                </tr>
             </table>
         </div>
     </body>
