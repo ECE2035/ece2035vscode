@@ -13,47 +13,51 @@ export const BYTES_PER_ROW = 4;
 
 function handleUpdateScreen(data) {
   let canvas = document.getElementById("screen");
-  // let img = document.getElementById("pastScreen");
+  let img = document.getElementById("pastScreen");
 
-  // if (img.hidden == false) {
-  //   img.hidden = true;
-  //   canvas.hidden = false;
-  //   let saveButton = document.getElementById("save_button");
-  //   saveButton.className = "primary-button";
-  //   saveButton.hidden = false;
-  //   saveButton.disabled = false;
-  //   saveButton.style = "display: inline-block; margin-left: 20px;";
-  // }
+  if (img === null || img === undefined || !img || !Object.hasOwn(img, "hidden")) {
+    return;
+  }
 
-  // if (canvas.width != data.width || canvas.height != data.height) {
-  //   canvas.width = data.width;
-  //   canvas.height = data.height;
-  // }
+  if (img.hidden === false) {
+    img.hidden = true;
+    canvas.hidden = false;
+    let saveButton = document.getElementById("save_button");
+    saveButton.className = "primary-button";
+    saveButton.hidden = false;
+    saveButton.disabled = false;
+    saveButton.style = "display: inline-block; margin-left: 20px;";
+  }
 
-  // let ctx = canvas.getContext("2d");
-  // ctx.willReadFrequently = true;
+  if (canvas.width !== data.width || canvas.height !== data.height) {
+    canvas.width = data.width;
+    canvas.height = data.height;
+  }
 
-  // for (let update of data.updates) {
-  //   let x = update.region_x;
-  //   let y = update.region_y;
-  //   let imageData = ctx.getImageData(x, y, 16, 16);
+  let ctx = canvas.getContext("2d");
+  ctx.willReadFrequently = true;
 
-  //   for (let i = 0; i < 16; i++) {
-  //     for (let j = 0; j < 16; j++) {
-  //       let index = (i * 16 + j) * 4;
-  //       imageData.data[index] = update.data[i * 16 + j] & 0xff; // red
-  //       imageData.data[index + 1] = (update.data[i * 16 + j] >> 8) & 0xff; // green
-  //       imageData.data[index + 2] =
-  //         (update.data[i * 16 + j] >> 16) & 0xff; // blue
-  //       imageData.data[index + 3] = 0xff; // alpha
-  //     }
-  //   }
+  for (let update of data.updates) {
+    let x = update.region_x;
+    let y = update.region_y;
+    let imageData = ctx.getImageData(x, y, 16, 16);
 
-  //   ctx.putImageData(imageData, x, y);
-  // }
+    for (let i = 0; i < 16; i++) {
+      for (let j = 0; j < 16; j++) {
+        let index = (i * 16 + j) * 4;
+        imageData.data[index] = update.data[i * 16 + j] & 0xff; // red
+        imageData.data[index + 1] = (update.data[i * 16 + j] >> 8) & 0xff; // green
+        imageData.data[index + 2] =
+          (update.data[i * 16 + j] >> 16) & 0xff; // blue
+        imageData.data[index + 3] = 0xff; // alpha
+      }
+    }
 
-  // // updating stats
-  // updateStats(data.stats, data.status);
+    ctx.putImageData(imageData, x, y);
+  }
+
+  // updating stats
+  updateStats(data.stats, data.status);
 }
 
 function handleReadMemory({ mainMemory, stackMemory, gp, sp, setMemoryData, setStackData, setGp, setSp }) {
@@ -115,22 +119,22 @@ function updateStats(stats, status) {
   document.getElementById("stats-registers").innerText = stats.reg;
   document.getElementById("stats-memory").innerText = stats.mem;
 
-  if (status === "passed" || status === "pass") {
-    document.getElementById("stats-status").innerText = "Passed";
-    document.getElementById("stats-status").style.color = "green";
-  } else if (status === "failed" || status === "fail") {
-    document.getElementById("stats-status").innerText = "Failed";
-    document.getElementById("stats-status").style.color =
-      "var(--vscode-errorForeground)";
-  } else if (status === "unknown") {
-    document.getElementById("stats-status").innerText = "Not Run";
-    document.getElementById("stats-status").style.color =
-      "var(--vscode-descriptionForeground)";
-  } else {
-    document.getElementById("stats-status").innerText = "Still Running";
-    document.getElementById("stats-status").style.color =
-      "var(--vscode-descriptionForeground)";
-  }
+  // if (status === "passed" || status === "pass") {
+  //   document.getElementById("stats-status").innerText = "Passed";
+  //   document.getElementById("stats-status").style.color = "green";
+  // } else if (status === "failed" || status === "fail") {
+  //   document.getElementById("stats-status").innerText = "Failed";
+  //   document.getElementById("stats-status").style.color =
+  //     "var(--vscode-errorForeground)";
+  // } else if (status === "unknown") {
+  //   document.getElementById("stats-status").innerText = "Not Run";
+  //   document.getElementById("stats-status").style.color =
+  //     "var(--vscode-descriptionForeground)";
+  // } else {
+  //   document.getElementById("stats-status").innerText = "Still Running";
+  //   document.getElementById("stats-status").style.color =
+  //     "var(--vscode-descriptionForeground)";
+  // }
 }
 
 
@@ -161,11 +165,12 @@ function App() {
   const [gp, setGp] = useState(0);
   const [sp, setSp] = useState(0);
   const [showInstructions, setShowInstructions] = useState(false);
-
-  console.log(showInstructions);
+  const [isDebugging, setIsDebugging] = useState(false);
 
   useEffect(() => {
     window.addEventListener("message", (event) => {
+
+      console.log("Received ", event.data);
       const message = event.data; // Received message
       switch (message.command) {
         case "read_memory":
@@ -179,12 +184,15 @@ function App() {
             setGp: setGp,
             setSp: setSp,
           });
+
+          setIsDebugging(true);
           break;
         case "screen_update":
           handleUpdateScreen(message.data);
           break;
         case "show_past_screen":
           showPastScreen(message.data);
+          setIsDebugging(false);
           break;
         case "context_update":
           seed = message.data.seed;
@@ -193,6 +201,8 @@ function App() {
           break;
       }
     });
+
+    vscode.postMessage({ command: 'ready' });
 
   }, [])
 
@@ -204,8 +214,9 @@ function App() {
 
   return (
     <>
-      <h2>RISC-V Memory View</h2>
-      <label class="vscode-checkbox">
+      <ScreenView vscode={vscode}/>
+
+      { isDebugging ?  <> <label class="vscode-checkbox">
         <input onChange={() => onInstructionToggle()} id="show-instructions" type="checkbox" />
         <div class="checkmark"></div>
         <span>Show instructions</span>
@@ -217,7 +228,7 @@ function App() {
         <div>
           <MemoryView reverse={true} showInstructions={showInstructions} title={"Stack"} gp={gp} baseAddress={sp} memoryData={stackData} oldMemory={oldMemory} />
         </div>
-      </div>
+      </div></> : <></>}
     </>
   );
 }

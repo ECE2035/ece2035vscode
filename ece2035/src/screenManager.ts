@@ -6,9 +6,11 @@ import path = require('path');
 
 export class ScreenManager {
     private screenOpened = false;
+    private screenInitialized = false;
     private context: vscode.ExtensionContext;
     private screenPanel: vscode.WebviewPanel | undefined;
     private commandHandlers: Map<string, (data: any) => void> = new Map();
+    private commandQueue: any[] = [];
 
     private mode: string;
 
@@ -50,10 +52,28 @@ export class ScreenManager {
         this.screenPanel.webview.onDidReceiveMessage((message) => {
             console.log("Received ", message);
 
-            let handler = this.commandHandlers.get(message.command);
-            if (handler) {
-                handler(message.data);
+            // There's a chance we send data before the webview can be properly loaded
+            // on slower machines. Instead, we have a "ready" signal the webview will
+            // send to signal data can now be sent
+            if (message.command === "ready") {
+                console.log("Received ready command");
+
+                this.screenInitialized = true;
+
+                // Run through all received commands before it was ready and send them
+                while (this.commandQueue.length !== 0) {
+                    let command = this.commandQueue.shift();
+
+                    console.log(`Running ${command} from queue`);
+                    this.screenPanel?.webview.postMessage(command);
+                }
+            } else {
+                let handler = this.commandHandlers.get(message.command);
+                if (handler) {
+                    handler(message.data);
+                }
             }
+
         });
 
 
@@ -68,8 +88,10 @@ export class ScreenManager {
             this.setWebviewContent();
         });
 
-        // initial memory request
-        this.readMemory();
+        // Only send an initial memory request if we're currently debugging
+        if (vscode.debug.activeDebugSession !== undefined) {
+            this.readMemory();
+        }
     }
 
     public async readMemory() {
@@ -112,7 +134,7 @@ export class ScreenManager {
 
 
 
-            await this.screenPanel?.webview.postMessage({ command: "read_memory", data: { stackMemory: stackResponse.data, mainMemory: mainMemoryResponse.data, gp: registerValues.variables[0], sp: spAddress } });
+            await this.postCommand({ command: "read_memory", data: { stackMemory: stackResponse.data, mainMemory: mainMemoryResponse.data, gp: registerValues.variables[0], sp: spAddress } });
 
         } catch (err) {
 
@@ -127,13 +149,14 @@ export class ScreenManager {
         if (this.screenPanel) {
             this.screenPanel.dispose();
             this.screenOpened = false;
+            console.log("CLOSING SCREEN PANEL");
         }
     }
 
     public sendScreenMessage(command: string, data: any) {
         this.mode = "active";
         if (this.screenPanel) {
-            this.screenPanel.webview.postMessage({ command: command, data: data });
+            this.postCommand({ command: command, data: data });
         }
     }
 
@@ -145,6 +168,17 @@ export class ScreenManager {
         this.commandHandlers.delete(command);
     }
 
+    private async postCommand(args: any) {
+        // If the webview hasn't been initialized yet,
+        // enqueue onto the command buffer .As soon as the 
+        // ready signal is sent, these are sent in bulk
+        if (!this.screenInitialized) {
+            this.commandQueue.push(args);
+        } else {
+            this.screenPanel?.webview.postMessage(args);
+        }
+    }
+
     public showTestCase(testCase: TestCase) {
         this.openScreenPanel();
         if (this.screenPanel) {
@@ -154,8 +188,9 @@ export class ScreenManager {
                 image: this.screenPanel.webview.asWebviewUri(vscode.Uri.file(testCase.getImagePath()!)).toString(),
                 stats: testCase.stats,
                 status: testCase.status,
-            }
-            this.screenPanel.webview.postMessage({ command: "show_past_screen", data: data });
+            };
+
+            this.postCommand({ command: "show_past_screen", data: data });
             this.mode = "past";
         }
     }
@@ -173,8 +208,8 @@ export class ScreenManager {
             return;
         }
 
-        const filtPath: vscode.Uri = vscode.Uri.file(this.context.asAbsolutePath("assets/html/memoryView.html"));
-        let contents = fs.readFileSync(filtPath.fsPath, "utf8");;
+        // const filtPath: vscode.Uri = vscode.Uri.file(this.context.asAbsolutePath("assets/html/memoryView.html"));
+        // let contents = fs.readFileSync(filtPath.fsPath, "utf8");;
 
         const buttonBackgroundColor = new vscode.ThemeColor("button.background");
         const buttonTextColor = new vscode.ThemeColor("button.foreground");

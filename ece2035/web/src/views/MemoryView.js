@@ -1,6 +1,6 @@
 import { BYTES_PER_ROW } from "../App";
 
-export default function MemoryView({ title, gp, baseAddress, memoryData, oldMemory, showInstructions, reverse }) {
+export default function MemoryView({ title, gp, baseAddress, memoryData, oldMemory, showInstructions, reverse, memoryEnd }) {
   const rows = Math.ceil(memoryData.length / BYTES_PER_ROW);
 
   let rowData =
