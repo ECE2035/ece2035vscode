@@ -127,22 +127,22 @@ function updateStats(stats, status, setStatus) {
 }
 
 
-function saveTestCase() {
+function saveTestCase(vscode) {
   console.log("saving testcase");
 
-  //   // Saving the canvas image data as a base64 png image string
-  //   let canvas = document.getElementById("screen");
-  //   let image = canvas.toDataURL("image/png");
-  //   let data = {
-  //     seed: seed,
-  //     image: image.substring(22)
-  //   };
+    // Saving the canvas image data as a base64 png image string
+    let canvas = document.getElementById("screen");
+    let image = canvas.toDataURL("image/png");
+    let data = {
+      seed: seed,
+      image: image.substring(22)
+    };
 
-  //   // Sending the image data to the parent window
-  //   vscode.postMessage({
-  //     command: 'save_testcase',
-  //     data: data
-  //   });
+    // Sending the image data to the parent window
+    vscode.postMessage({
+      command: 'save_testcase',
+      data: data
+    });
 }
 
 export default function ScreenView({ vscode }) {
@@ -174,7 +174,7 @@ export default function ScreenView({ vscode }) {
       <div style={{ display: "flex", alignItems: "center" }}>
         <h2 style={{ marginRight: "2rem" }}>RISC-V Screen View</h2>
       
-        <button onClick={saveTestCase} id="save_button" style={{marginRight: "0.50rem", height: "2rem"}} className="primary-button">Save as Testcase</button>
+        <button onClick={() => { saveTestCase(vscode)}} id="save_button" style={{marginRight: "0.50rem", height: "2rem"}} className="primary-button">Save as Testcase</button>
 
 
         <Badge badgeType={status}/>
@@ -203,11 +203,6 @@ export default function ScreenView({ vscode }) {
             <p id="stats-memory" style={{ fontSize: '1.25rem', fontWeight: '700' }}>0</p>
         </div>
     </div>
-      {/* <div class="focus-area">
-        <h2 hidden={true} style={{ display: "inline", paddingLeft: "20px", paddingTop: "-4px" }}>Results</h2>
-
-        <h2 hidden={true} style={{ display: "inline", paddingLeft: "20px", paddingTop: "-4px", color: "var(--vscode-descriptionForeground)" }} id="stats-status">Still Running</h2>
-      </div> */}
     </body>
 
   </>
