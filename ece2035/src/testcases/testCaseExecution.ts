@@ -20,6 +20,12 @@ export class TestCaseExecutor {
                 console.error(`exec error: ${error}`);
                 return;
             }
+            //if(stdout){
+                //console.log(`stdout: ${stdout}`);
+            //}
+             // Log the entire output to the Debug Console
+            //console.log(stdout);  // Logs the stdout (output from the emulator) to Debug Console
+
             // added code to extract out json substrings based on { } delimiters
             // rather than /n which doesn't always separate consecutive json strings)
             var getDelimiterIndices = (s:string, t1:string, t2:string) => {

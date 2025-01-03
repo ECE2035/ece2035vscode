@@ -45,6 +45,11 @@
         "icon": "$(run-all)"
       },
       {
+        "command": "ece2035.runMultiExecute",
+        "title": "Run Multi Execute",
+        "icon": "$(export)"
+      },
+      {
         "command": "ece2035.deleteTestCase",
         "title": "Delete RISCV Test Case",
         "icon": "$(trash)"
@@ -162,6 +167,12 @@
       "view/title": [
         {
           "command": "ece2035.runAllTestCases",
+          "when": "view == riscvtestcases",
+          "group": "navigation"
+        },
+        {
+          "command": "ece2035.runMultiExecute",
+          "description": "Diego's multiexecute",
           "when": "view == riscvtestcases",
           "group": "navigation"
         }

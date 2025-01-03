@@ -53,6 +53,10 @@ export class ScreenManager {
         });
     }
 
+    public getScreenPanel() {
+        return this.screenPanel;
+    }
+
     public closeScreenPanel() {
         if (this.screenPanel) {
             this.screenPanel.dispose();
@@ -84,10 +88,31 @@ export class ScreenManager {
                 image: this.screenPanel.webview.asWebviewUri(vscode.Uri.file(testCase.getImagePath()!)).toString(),
                 stats: testCase.stats,
                 status: testCase.status,
-            }
+            };
             this.screenPanel.webview.postMessage({ command: "show_past_screen", data: data });
             this.mode = "past";
         }
+    }
+
+    // public showMultiExecute(results: any){
+    //     let resultArray = results['[[PromiseResult]]']; // throws an error
+    //     console.log(resultArray);
+    //     console.log(results);
+    //     this.openScreenPanel();
+    //     if (this.screenPanel) {
+    //         let workspaceFolders = vscode.workspace.workspaceFolders;
+
+    //         let data = {
+    //             results: results,
+    //         };
+    //         this.screenPanel.webview.postMessage({ command: "show_past_screen", data: data });
+    //         this.mode = "multi";
+    //     }
+
+    // }
+
+    public setMode(mode: string) {
+        this.mode = mode;
     }
 
     public getMode() {
