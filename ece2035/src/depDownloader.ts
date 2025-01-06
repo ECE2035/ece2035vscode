@@ -31,10 +31,10 @@ export function checkDependencies(context : vscode.ExtensionContext) {
                     let url = baseUrl + "riscvemulator-";
                     if (os === "win32") {
                         url += "win-";
-                    // } else if (os === "darwin") {
-                    //     url += "mac-";
-                    // } else if (os === "linux") {
-                    //     url += "linux-";
+                    } else if (os === "darwin") {
+                        url += "mac-";
+                    } else if (os === "linux") {
+                        url += "linux-";
                     } else {
                         vscode.window.showErrorMessage("Your operating system is not supported.");
                         return;
