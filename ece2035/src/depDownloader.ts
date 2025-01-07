@@ -27,10 +27,12 @@ export function checkDependencies(context : vscode.ExtensionContext) {
                     // then download the correct file
                     let os = process.platform;
                     let arch = process.arch;
-                    
+                    let exten = "";
+
                     let url = baseUrl + "riscvemulator-";
                     if (os === "win32") {
                         url += "win-";
+                        exten = ".exe";
                     } else if (os === "darwin") {
                         url += "mac-";
                     } else if (os === "linux") {
@@ -41,7 +43,7 @@ export function checkDependencies(context : vscode.ExtensionContext) {
                     }
 
                     if (arch === "x64") {
-                        url += "x64.exe";
+                        url += "x64";
                     } else if (arch === "arm64") {
                         url += "arm64";
                     } else if (arch === "arm") {
@@ -50,13 +52,15 @@ export function checkDependencies(context : vscode.ExtensionContext) {
                         vscode.window.showErrorMessage("Your CPU architecture is not supported."+arch);
                         return;
                     }
+                    url += exten;
 
                     // deactivate the language client
                     deactivateLanguageClient();
 
                     // download the file
                     vscode.window.showInformationMessage("Downloading RISC-V Emulator...");
-                    api.downloadFile(vscode.Uri.parse(url), "riscvemulator.exe", context).then((fileUri: vscode.Uri) => {
+                    const downloadSettings = {"makeExecutable":true};
+                    api.downloadFile(vscode.Uri.parse(url), "riscvemulator.exe", context, undefined, undefined, downloadSettings).then((fileUri: vscode.Uri) => {
                         context.globalState.update("riscvemulator", fileUri.fsPath);
                         context.globalState.update("riscvemulatorVersion", version);
                         vscode.window.showInformationMessage("RISC-V Emulator downloaded. Have fun!");
@@ -75,10 +79,12 @@ export function checkDependencies(context : vscode.ExtensionContext) {
             // then download the correct file
             let os = process.platform;
             let arch = process.arch;
+            let exten = '';
 
             let url = baseUrl + "riscvemulator-";
             if (os === "win32") {
                 url += "win-";
+                exten = ".exe";
             } else if (os === "darwin") {
                 url += "mac-";
             } else if (os === "linux") {
@@ -89,7 +95,7 @@ export function checkDependencies(context : vscode.ExtensionContext) {
             }
 
             if (arch === "x64") {
-                url += "x64.exe";
+                url += "x64";
             } else if (arch === "arm64") {
                 url += "arm64";
             } else if (arch === "arm") {
@@ -98,10 +104,12 @@ export function checkDependencies(context : vscode.ExtensionContext) {
                 vscode.window.showErrorMessage("Your CPU architecture is not supported."+arch);
                 return;
             }
+            url += exten;
 
             // download the file
             vscode.window.showInformationMessage("Downloading RISC-V Emulator...");
-            api.downloadFile(vscode.Uri.parse(url), "riscvemulator.exe", context).then((fileUri: vscode.Uri) => {
+            const downloadSettings = {"makeExecutable":true};
+            api.downloadFile(vscode.Uri.parse(url), "riscvemulator.exe", context, undefined, undefined, downloadSettings).then((fileUri: vscode.Uri) => {
                 context.globalState.update("riscvemulator", fileUri.fsPath);
                 vscode.window.showInformationMessage("RISC-V Emulator downloaded. Have fun!");
 
