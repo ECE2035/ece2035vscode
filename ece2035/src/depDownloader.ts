@@ -34,7 +34,7 @@ export function checkDependencies(context : vscode.ExtensionContext) {
                         url += "win-";
                         exten = ".exe";
                     } else if (os === "darwin") {
-                        url += "mac-";
+                        url += "macos-";
                     } else if (os === "linux") {
                         url += "linux-";
                     } else {
@@ -86,7 +86,7 @@ export function checkDependencies(context : vscode.ExtensionContext) {
                 url += "win-";
                 exten = ".exe";
             } else if (os === "darwin") {
-                url += "mac-";
+                url += "macos-";
             } else if (os === "linux") {
                 url += "linux-";
             } else {
