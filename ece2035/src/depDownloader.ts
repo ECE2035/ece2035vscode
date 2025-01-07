@@ -63,6 +63,7 @@ export function checkDependencies(context : vscode.ExtensionContext) {
                     api.downloadFile(vscode.Uri.parse(url), "riscvemulator.exe", context, undefined, undefined, downloadSettings).then((fileUri: vscode.Uri) => {
                         context.globalState.update("riscvemulator", fileUri.fsPath);
                         context.globalState.update("riscvemulatorVersion", version);
+                        context.globalState.update("osarch", os+arch);
                         vscode.window.showInformationMessage("RISC-V Emulator downloaded. Have fun!");
 
                         // reload the extension
@@ -73,8 +74,8 @@ export function checkDependencies(context : vscode.ExtensionContext) {
         });
 
         let emulatorInstalled = context.globalState.get("riscvemulator") !== undefined;
-
-        if (!emulatorInstalled) {
+        let osarchChanged = context.globalState.get("osarch") !== process.platform+process.arch;
+        if (!emulatorInstalled || osarchChanged) {
             // download it - first must get the system type (OS and architecture)
             // then download the correct file
             let os = process.platform;
@@ -111,6 +112,7 @@ export function checkDependencies(context : vscode.ExtensionContext) {
             const downloadSettings = {"makeExecutable":true};
             api.downloadFile(vscode.Uri.parse(url), "riscvemulator.exe", context, undefined, undefined, downloadSettings).then((fileUri: vscode.Uri) => {
                 context.globalState.update("riscvemulator", fileUri.fsPath);
+                context.globalState.update("osarch", os+arch);
                 vscode.window.showInformationMessage("RISC-V Emulator downloaded. Have fun!");
 
                 // reload the extension
