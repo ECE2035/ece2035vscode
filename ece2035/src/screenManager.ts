@@ -172,7 +172,7 @@ export class ScreenManager {
         this.commandHandlers.delete(command);
     }
 
-    private async postCommand(args: any) {
+    public async postCommand(args: any) {
         // If the webview hasn't been initialized yet,
         // enqueue onto the command buffer .As soon as the 
         // ready signal is sent, these are sent in bulk

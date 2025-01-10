@@ -289,7 +289,7 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
                             const screenPanel = screenManager.getScreenPanel();
                             if (screenPanel) {
                                 console.log("attempting to post");
-                                screenPanel.webview.postMessage({ command: "show_multi_screen", data: data });
+                                screenManager.postCommand({ command: "show_multi_screen", data: data });
                                 console.log("after");
                             }
 
@@ -404,7 +404,8 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
                             const screenPanel = screenManager.getScreenPanel();
                             if (screenPanel) {
                                 console.log("attempting to post");
-                                screenPanel.webview.postMessage({ command: "show_multi_screen", data: data });
+                                console.log({data});
+                                screenManager.postCommand({ command: "show_multi_screen", data: data });
                                 console.log("after");
                             }
 

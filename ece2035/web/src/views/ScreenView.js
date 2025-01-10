@@ -86,14 +86,26 @@ function showPastScreen(data, setStatus) {
 function updateStats(stats, status, setStatus) {
   let newStatus;
 
-  if (status === "passed" || status === "pass") {
-    newStatus = BadgeType.SUCCESS;
-  } else if (status === "failed" || status === "fail") {
-    newStatus = BadgeType.FAILED;
-  } else if (status === "unknown") {
-    newStatus = BadgeType.NOT_STARTED;
-  } else {
-    newStatus = BadgeType.IN_PROGRESS;
+  console.log("set status to ", status);
+
+  switch (status) {
+    case "passed":
+    case "pass":
+      newStatus = BadgeType.STATUS;
+      break;
+    case "failed":
+    case "fail":
+      newStatus = BadgeType.FAILED;
+      break;
+    case "unknown":
+      newStatus = BadgeType.NOT_STARTED;
+      break;
+    case "done":
+      newStatus = BadgeType.DONE;
+      break;
+    default:
+      newStatus = BadgeType.IN_PROGRESS;
+      break;
   }
 
   setStatus(newStatus);
@@ -130,23 +142,32 @@ function updateStats(stats, status, setStatus) {
 function saveTestCase(vscode) {
   console.log("saving testcase");
 
-    // Saving the canvas image data as a base64 png image string
-    let canvas = document.getElementById("screen");
-    let image = canvas.toDataURL("image/png");
-    let data = {
-      seed: seed,
-      image: image.substring(22)
-    };
+  // Saving the canvas image data as a base64 png image string
+  let canvas = document.getElementById("screen");
+  let image = canvas.toDataURL("image/png");
+  let data = {
+    seed: seed,
+    image: image.substring(22)
+  };
 
-    // Sending the image data to the parent window
-    vscode.postMessage({
-      command: 'save_testcase',
-      data: data
-    });
+  // Sending the image data to the parent window
+  vscode.postMessage({
+    command: 'save_testcase',
+    data: data
+  });
+}
+
+function showMultiScreen(data, status, setStatus) {
+  let saveButton = document.getElementById("save_button");
+  saveButton.className = "hidden";
+  saveButton.hidden = true;
+  saveButton.disabled = true;
+  saveButton.style = "opacity: 0;"
+  updateStats(data.stats, status, setStatus);
 }
 
 export default function ScreenView({ vscode }) {
-  const [ status, setStatus ] = useState(BadgeType.IN_PROGRESS);
+  const [status, setStatus] = useState(BadgeType.IN_PROGRESS);
 
   useEffect(() => {
 
@@ -159,6 +180,11 @@ export default function ScreenView({ vscode }) {
           break;
         case 'show_past_screen':
           showPastScreen(message.data, setStatus);
+          break;
+        case "show_multi_screen":
+          console.log("Showing multi exec with ");
+          console.log({ data: message });
+          showMultiScreen(message.data, message.data.status, setStatus);
           break;
         case 'context_update':
           seed = message.data.seed;
@@ -173,36 +199,36 @@ export default function ScreenView({ vscode }) {
     <body>
       <div style={{ display: "flex", alignItems: "center" }}>
         <h2 style={{ marginRight: "2rem" }}>RISC-V Screen View</h2>
-      
-        <button onClick={() => { saveTestCase(vscode)}} id="save_button" style={{marginRight: "0.50rem", height: "2rem"}} className="primary-button">Save as Testcase</button>
+
+        <button onClick={() => { saveTestCase(vscode) }} id="save_button" style={{ marginRight: "0.50rem", height: "2rem" }} className="primary-button">Save as Testcase</button>
 
 
-        <Badge badgeType={status}/>
+        <Badge badgeType={status} />
       </div>
-      <div style={{ display: "flex", justifyContent: "center"}}>
+      <div style={{ display: "flex", justifyContent: "center" }}>
         <canvas id="screen" width="160" height="160"></canvas>
         <img alt="pattern" width="160" height="160" hidden="true" id="pastScreen" />
       </div>
 
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))" }}>
-          <div style={{ borderRadius: '0.5rem' }}>
-            <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#718096' }}>Dynamic Instructions</p>
-            <p id="stats-di" style={{ fontSize: '1.25rem', fontWeight: '700' }}>0</p>
-          </div>
-          <div style={{ borderRadius: '0.5rem' }}>
-            <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#718096' }}>Static Instructions</p>
-            <p id="stats-si" style={{ fontSize: '1.25rem', fontWeight: '700' }}>0</p>
-          </div>
-          <div style={{ borderRadius: '0.5rem' }}>
-            <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#718096' }}>Registers Used</p>
-            <p id="stats-registers" style={{ fontSize: '1.25rem', fontWeight: '700' }}>0</p>
-          </div>
-          <div style={{ borderRadius: '0.5rem' }}>
-            <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#718096' }}>Memory Used</p>
-            <p id="stats-memory" style={{ fontSize: '1.25rem', fontWeight: '700' }}>0</p>
+        <div style={{ borderRadius: '0.5rem' }}>
+          <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#718096' }}>Dynamic Instructions</p>
+          <p id="stats-di" style={{ fontSize: '1.25rem', fontWeight: '700' }}>0</p>
         </div>
-    </div>
+        <div style={{ borderRadius: '0.5rem' }}>
+          <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#718096' }}>Static Instructions</p>
+          <p id="stats-si" style={{ fontSize: '1.25rem', fontWeight: '700' }}>0</p>
+        </div>
+        <div style={{ borderRadius: '0.5rem' }}>
+          <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#718096' }}>Registers Used</p>
+          <p id="stats-registers" style={{ fontSize: '1.25rem', fontWeight: '700' }}>0</p>
+        </div>
+        <div style={{ borderRadius: '0.5rem' }}>
+          <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#718096' }}>Memory Used</p>
+          <p id="stats-memory" style={{ fontSize: '1.25rem', fontWeight: '700' }}>0</p>
+        </div>
+      </div>
     </body>
 
   </>
