@@ -5,10 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "mipsvm",
+            "type": "riscv-vm",
             "request": "launch",
             "name": "Launch Assem",
-            "program": "${file}"
+            //"seed" : 1710519662,
+            "program": "${file}",
+            "assignment": "${workspaceFolder}\\EmulatorCPPBase.elf"
         }
     ]
 }

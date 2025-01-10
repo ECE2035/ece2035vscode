@@ -3,7 +3,7 @@
   "displayName": "ECE2035",
   "description": "VS Code Companion Extension for Georgia Tech ECE 2035",
   "publisher": "GatechECE2035",
-  "version": "0.0.18",
+  "version": "0.2.2",
   "engines": {
     "vscode": "^1.75.0"
   },
@@ -43,6 +43,11 @@
         "command": "ece2035.runAllTestCases",
         "title": "Run All RISCV Test Cases",
         "icon": "$(run-all)"
+      },
+      {
+        "command": "ece2035.runMultiExecute",
+        "title": "Run Multi Execute",
+        "icon": "$(export)"
       },
       {
         "command": "ece2035.deleteTestCase",
@@ -162,6 +167,12 @@
       "view/title": [
         {
           "command": "ece2035.runAllTestCases",
+          "when": "view == riscvtestcases",
+          "group": "navigation"
+        },
+        {
+          "command": "ece2035.runMultiExecute",
+          "description": "Diego's multiexecute",
           "when": "view == riscvtestcases",
           "group": "navigation"
         }

@@ -85,6 +85,17 @@
             newImg.src = srcUrl;
         }
 
+        function showMultiScreen(data){
+            let img = document.getElementById("pastScreen");
+            let canvas = document.getElementById("screen");
+            let saveButton = document.getElementById("save_button");
+            saveButton.className = "hidden";
+            saveButton.hidden = true;
+            saveButton.disabled = true;
+            saveButton.style = "opacity: 0;"
+            updateStats(data.stats, data.status);
+        }
+
         function updateStats(stats, status) {
             if (stats.di == undefined) {
                 stats.di = "??";
@@ -99,7 +110,7 @@
             document.getElementById("stats-memory").innerText = stats.mem;
 
             if (status == "passed" || status == "pass") {
-                document.getElementById("stats-status").innerText = "Passed";
+                document.getElementById("stats-status").innerText = "Passed"; 
                 document.getElementById("stats-status").style.color = "green";
             } else if (status == "failed" || status == "fail") {
                 document.getElementById("stats-status").innerText = "Failed";
@@ -107,9 +118,13 @@
             } else if (status == "unknown") {
                 document.getElementById("stats-status").innerText = "Not Run";
                 document.getElementById("stats-status").style.color = "var(--vscode-descriptionForeground)";
+            } else if(status == "done"){
+                document.getElementById("stats-status").innerText = "Done";
+                document.getElementById("stats-status").style.color = "var(--vscode-descriptionForeground)";
             } else {
                 document.getElementById("stats-status").innerText = "Still Running";
                 document.getElementById("stats-status").style.color = "var(--vscode-descriptionForeground)";
+                //document.getElementById("stats-status").style.color = "blue"; //this didn't update anything?? 
             }
         }
 
@@ -120,8 +135,14 @@
                 handleUpdateScreen(message.data);
                 break;
             case 'show_past_screen':
+                console.log("showing past screen");
+                console.log(message.data);
                 showPastScreen(message.data);
                 break;
+            case 'show_multi_screen':
+                console.log("showing multi screen");
+                console.log(message.data);
+                showMultiScreen(message.data);
             case 'context_update':
                 seed = message.data.seed;
                 break;
@@ -132,7 +153,7 @@
             console.log("saving testcase");
 
             // Saving the canvas image data as a base64 png image string
-            let canvas = document.getElementById("screen");
+            let canvas = document.getElementById("screen"); 
             let image = canvas.toDataURL("image/png");
             let data = {
                 seed: seed,

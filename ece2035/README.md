@@ -7,7 +7,7 @@
 ### Version Alpha 1.0.1
 
 Features
-* RISC-V Emulator (RC32I instruction set)
+* RISC-V Emulator (RV32IM instruction set)
 * RISC-V Assembler
 * RISC-V Language Server
 * Live Debugger for the Emulator
