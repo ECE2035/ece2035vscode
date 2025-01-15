@@ -27,38 +27,43 @@ export function checkDependencies(context : vscode.ExtensionContext) {
                     // then download the correct file
                     let os = process.platform;
                     let arch = process.arch;
+                    let exten = "";
 
                     let url = baseUrl + "riscvemulator-";
                     if (os === "win32") {
                         url += "win-";
-                    // } else if (os === "darwin") {
-                    //     url += "mac-";
-                    // } else if (os === "linux") {
-                    //     url += "linux-";
+                        exten = ".exe";
+                    } else if (os === "darwin") {
+                        url += "macos-";
+                    } else if (os === "linux") {
+                        url += "linux-";
                     } else {
-                        vscode.window.showErrorMessage("Your operating system is not supported.");
+                        vscode.window.showErrorMessage("Your operating system is not supported."+os);
                         return;
                     }
 
                     if (arch === "x64") {
-                        url += "x64.exe";
-                    // } else if (arch === "arm64") {
-                    //     url += "arm64";
-                    // } else if (arch === "arm") {
-                    //     url += "arm";
+                        url += "x64";
+                    } else if (arch === "arm64") {
+                        url += "arm64";
+                    } else if (arch === "arm") {
+                        url += "arm";
                     } else {
-                        vscode.window.showErrorMessage("Your CPU architecture is not supported.");
+                        vscode.window.showErrorMessage("Your CPU architecture is not supported."+arch);
                         return;
                     }
+                    url += exten;
 
                     // deactivate the language client
                     deactivateLanguageClient();
 
                     // download the file
                     vscode.window.showInformationMessage("Downloading RISC-V Emulator...");
-                    api.downloadFile(vscode.Uri.parse(url), "riscvemulator.exe", context).then((fileUri: vscode.Uri) => {
+                    const downloadSettings = {"makeExecutable":true};
+                    api.downloadFile(vscode.Uri.parse(url), "riscvemulator.exe", context, undefined, undefined, downloadSettings).then((fileUri: vscode.Uri) => {
                         context.globalState.update("riscvemulator", fileUri.fsPath);
                         context.globalState.update("riscvemulatorVersion", version);
+                        context.globalState.update("osarch", os+arch);
                         vscode.window.showInformationMessage("RISC-V Emulator downloaded. Have fun!");
 
                         // reload the extension
@@ -68,42 +73,46 @@ export function checkDependencies(context : vscode.ExtensionContext) {
             });
         });
 
-
         let emulatorInstalled = context.globalState.get("riscvemulator") !== undefined;
-
-        if (!emulatorInstalled) {
+        let osarchChanged = context.globalState.get("osarch") !== process.platform+process.arch;
+        if (!emulatorInstalled || osarchChanged) {
             // download it - first must get the system type (OS and architecture)
             // then download the correct file
             let os = process.platform;
             let arch = process.arch;
+            let exten = '';
 
             let url = baseUrl + "riscvemulator-";
             if (os === "win32") {
                 url += "win-";
-            // } else if (os === "darwin") {
-            //     url += "mac-";
-            // } else if (os === "linux") {
-            //     url += "linux-";
+                exten = ".exe";
+            } else if (os === "darwin") {
+                url += "macos-";
+            } else if (os === "linux") {
+                url += "linux-";
             } else {
-                vscode.window.showErrorMessage("Your operating system is not supported.");
+                vscode.window.showErrorMessage("Your operating system is not supported."+os);
                 return;
             }
 
             if (arch === "x64") {
-                url += "x64.exe";
-            // } else if (arch === "arm64") {
-            //     url += "arm64";
-            // } else if (arch === "arm") {
-            //     url += "arm";
+                url += "x64";
+            } else if (arch === "arm64") {
+                url += "arm64";
+            } else if (arch === "arm") {
+                url += "arm";
             } else {
-                vscode.window.showErrorMessage("Your CPU architecture is not supported.");
+                vscode.window.showErrorMessage("Your CPU architecture is not supported."+arch);
                 return;
             }
+            url += exten;
 
             // download the file
             vscode.window.showInformationMessage("Downloading RISC-V Emulator...");
-            api.downloadFile(vscode.Uri.parse(url), "riscvemulator.exe", context).then((fileUri: vscode.Uri) => {
+            const downloadSettings = {"makeExecutable":true};
+            api.downloadFile(vscode.Uri.parse(url), "riscvemulator.exe", context, undefined, undefined, downloadSettings).then((fileUri: vscode.Uri) => {
                 context.globalState.update("riscvemulator", fileUri.fsPath);
+                context.globalState.update("osarch", os+arch);
                 vscode.window.showInformationMessage("RISC-V Emulator downloaded. Have fun!");
 
                 // reload the extension

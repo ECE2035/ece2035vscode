@@ -1,6 +1,6 @@
 # Emulator Base C++ Project
 
-Clone this repository for an example assignment for students. The example is based on Spring 2021's Project 1. A working solution is in the file `sp21example.asm`.
+Clone this repository for an example assignment for students.
 
 ## Introduction
 
@@ -36,6 +36,3 @@ The emulator features a virtual display. The display can be whatever size you so
 
 The emulator pipes STDOUT to a virtual console. While developing assignments, this console is available on the same page you access the display on. In "production", this will be the VS code debug console. You may be free to use the console for whatever purpose you want, including printing information that students can use while interacting with the assignment (for example: "Correct!"). To print to the console, just use `printf` as you are used to. The console is the recommended way of debugging new assignments.
 
-## Running in the emulator
-
-Please see the [emulator's repository](https://github.gatech.edu/ECEInnovation/RISC-V-Emulator) for usage instructions.
