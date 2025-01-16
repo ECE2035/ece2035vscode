@@ -5,7 +5,6 @@
 import { useEffect, useState } from "react";
 import Badge, { BadgeType } from "../component/Badge";
 
-let socket = null;
 let seed = "";
 
 function handleUpdateScreen(data, setStatus) {
@@ -55,6 +54,11 @@ function handleUpdateScreen(data, setStatus) {
   updateStats(data.stats, data.status, setStatus);
 }
 
+// TODO: This function was (almost) directly ported from the original
+// javascript implementation, and as such uses getElementById and other 
+// non-standard elements you wouldn't see in a React implementation.
+// These should eventually be migrated over to a fully React-based
+// system. 
 function showPastScreen(data, setStatus) {
   let img = document.getElementById("pastScreen");
   let canvas = document.getElementById("screen");
@@ -91,7 +95,7 @@ function updateStats(stats, status, setStatus) {
   switch (status) {
     case "passed":
     case "pass":
-      newStatus = BadgeType.STATUS;
+      newStatus = BadgeType.PASSED;
       break;
     case "failed":
     case "fail":

@@ -1,5 +1,5 @@
 export const BadgeType = Object.freeze({
-  SUCCESS: Symbol("success"),
+  PASSED: Symbol("success"),
   FAILED: Symbol("failed"),
   IN_PROGRESS: Symbol("in-progress"),
   NOT_STARTED: Symbol("not-started"),
@@ -10,7 +10,7 @@ export default function Badge({ badgeType }) {
 
   const getBackgroundColor = () => {
     switch (badgeType) {
-      case BadgeType.SUCCESS: return "#046c4e";
+      case BadgeType.PASSED: return "#046c4e";
       case BadgeType.FAILED: return "#f05252";
       case BadgeType.IN_PROGRESS: return "#27272a";
       case BadgeType.NOT_STARTED: return "#27272a";
@@ -21,7 +21,7 @@ export default function Badge({ badgeType }) {
 
   const getForegroundColor = () => {
     switch (badgeType) {
-      case BadgeType.SUCCESS: return "#efefef";
+      case BadgeType.PASSED: return "#efefef";
       case BadgeType.FAILED: return "#efefef";
       case BadgeType.IN_PROGRESS: return "#efefef";
       case BadgeType.NOT_STARTED: return "#efefef";
@@ -32,7 +32,7 @@ export default function Badge({ badgeType }) {
 
   const getText = () => {
     switch (badgeType) {
-      case BadgeType.SUCCESS: return "Passed";
+      case BadgeType.PASSED: return "Passed";
       case BadgeType.FAILED: return "Failed";
       case BadgeType.IN_PROGRESS: return "In Progress";
       case BadgeType.NOT_STARTED: return "Not Started";

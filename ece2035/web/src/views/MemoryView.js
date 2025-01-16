@@ -5,7 +5,7 @@ export default function MemoryView({ title, gp, baseAddress, memoryData, oldMemo
 
   let rowData =
     [...Array(rows)].map((_, row) => {
-      const isInstruction = baseAddress + row * BYTES_PER_ROW < gp;
+      const isInstruction = false; //baseAddress + row * BYTES_PER_ROW < gp;
 
       if (isInstruction && !showInstructions) {
         return <></>

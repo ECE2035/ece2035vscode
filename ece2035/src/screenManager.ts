@@ -96,8 +96,6 @@ export class ScreenManager {
     }
 
     public async readMemory() {
-
-        vscode.window.showInformationMessage("attempting to poll");
         try {
             const session = vscode.debug.activeDebugSession;
 
@@ -122,20 +120,20 @@ export class ScreenManager {
                 count: (spStartMagicNumber - spAddress) >> 2// retrieve all stack contents
             });
 
-            const mainMemoryResponse = await session.customRequest('readMemory', {
-                memoryReference: '',
-                offset: 0, // hex of current sp
-                count: 1024, // retrieve all stack contents
-            });
-
             // retrieve the gp register for color highlighting
             const registerValues = await session.customRequest('variables', {
                 variablesReference: 3
             });
 
+            const gp = registerValues.variables[0];
 
+            const mainMemoryResponse = await session.customRequest('readMemory', {
+                memoryReference: '',
+                offset: parseInt(gp.value), // gp is object, get int32_t val
+                count: 1024, // retrieve all memory contents
+            });
 
-            await this.postCommand({ command: "read_memory", data: { stackMemory: stackResponse.data, mainMemory: mainMemoryResponse.data, gp: registerValues.variables[0], sp: spAddress } });
+            await this.postCommand({ command: "read_memory", data: { stackMemory: stackResponse.data, mainMemory: mainMemoryResponse.data, gp: gp, sp: spAddress } });
 
         } catch (err) {
 
