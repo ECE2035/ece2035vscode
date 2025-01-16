@@ -118,6 +118,15 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
         }
 
         // accessing launch.json parameters
+        let launchConfigs = getResolvedLaunchConfig();
+
+        // likely to occur if a test was run outside of a code editor
+        if (launchConfigs.length === 0) {
+            item.updateIcon("fail");
+            this._onDidChangeTreeData.fire(item);
+            return;
+        }
+
         let launchConfig = getResolvedLaunchConfig()[0];
         let assemblyCode: string | undefined = launchConfig["program"];
         let assignmentCode: string | undefined = launchConfig["assignment"];

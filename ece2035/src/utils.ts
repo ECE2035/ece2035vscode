@@ -9,6 +9,14 @@ export function getResolvedLaunchConfig() {
 
   const currFile = vscode.window.activeTextEditor?.document.uri;
 
+  if (!currFile) {
+    vscode.window.showErrorMessage("The currently selected window is not a valid text editor.");
+
+    return [];
+  }
+
+  console.log("Curr file was ", currFile);
+
   if (configs && Array.isArray(configs)) {
     // Iterate through configurations
     return configs.map(config => resolveVariables(config, vscode.workspace.workspaceFolders![0], currFile));
