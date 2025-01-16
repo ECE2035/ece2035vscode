@@ -13,7 +13,7 @@ function handleUpdateScreen(data, setStatus) {
   let canvas = document.getElementById("screen");
   let img = document.getElementById("pastScreen");
 
-  if (img.hidden == false) {
+  if (img.hidden === false) {
     img.hidden = true;
     canvas.hidden = false;
     let saveButton = document.getElementById("save_button");
@@ -23,7 +23,7 @@ function handleUpdateScreen(data, setStatus) {
     saveButton.style = "display: inline-block; margin-left: 20px;";
   }
 
-  if (canvas.width != data.width || canvas.height != data.height) {
+  if (canvas.width !== data.width || canvas.height !== data.height) {
     canvas.width = data.width;
     canvas.height = data.height;
     canvas.clientWidth = Math.min(canvas.clientWidth, 400);
@@ -121,21 +121,6 @@ function updateStats(stats, status, setStatus) {
   document.getElementById("stats-si").innerText = stats.si;
   document.getElementById("stats-registers").innerText = stats.reg;
   document.getElementById("stats-memory").innerText = stats.mem;
-
-  // if (status == "passed" || status == "pass") {
-  //   document.getElementById("stats-status").innerText = "Passed";
-  //   document.getElementById("stats-status").style.color = "green";
-  // } else if (status == "failed" || status == "fail") {
-  //   document.getElementById("stats-status").innerText = "Failed";
-  //   document.getElementById("stats-status").style.color = "var(--vscode-errorForeground)";
-  // } else if (status == "unknown") {
-  //   document.getElementById("stats-status").innerText = "Not Run";
-  //   document.getElementById("stats-status").style.color = "var(--vscode-descriptionForeground)";
-  // } else {
-  //   document.getElementById("stats-status").innerText = "Still Running";
-  //   document.getElementById("stats-status").style.color = "var(--vscode-descriptionForeground)";
-  // }
-
 }
 
 
@@ -173,7 +158,7 @@ export default function ScreenView({ vscode }) {
 
     window.addEventListener('message', event => {
       const message = event.data; // Received message
-      console.log("received ", message.command);
+      console.log("received theeeeeeee", message.command);
       switch (message.command) {
         case 'screen_update':
           handleUpdateScreen(message.data, setStatus);

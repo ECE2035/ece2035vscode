@@ -81,6 +81,7 @@ export class ScreenManager {
         this.screenOpened = true;
         this.screenPanel.onDidDispose(() => {
             this.screenOpened = false;
+            this.screenInitialized = false;
         });
 
 
@@ -176,16 +177,25 @@ export class ScreenManager {
         // If the webview hasn't been initialized yet,
         // enqueue onto the command buffer .As soon as the 
         // ready signal is sent, these are sent in bulk
+        console.log(this.screenPanel);
+
         if (!this.screenInitialized) {
+            console.log("screen not intiia;liozed");
             this.commandQueue.push(args);
         } else {
+            console.log("screen initialzied");
+
             this.screenPanel?.webview.postMessage(args);
         }
     }
 
     public showTestCase(testCase: TestCase) {
         this.openScreenPanel();
+
+        console.log("hello i am test case abnd going to show past screen");
+
         if (this.screenPanel) {
+            console.log("actually going to");
             let workspaceFolders = vscode.workspace.workspaceFolders;
 
             let data = {
@@ -198,23 +208,6 @@ export class ScreenManager {
             this.mode = "past";
         }
     }
-
-    // public showMultiExecute(results: any){
-    //     let resultArray = results['[[PromiseResult]]']; // throws an error
-    //     console.log(resultArray);
-    //     console.log(results);
-    //     this.openScreenPanel();
-    //     if (this.screenPanel) {
-    //         let workspaceFolders = vscode.workspace.workspaceFolders;
-
-    //         let data = {
-    //             results: results,
-    //         };
-    //         this.screenPanel.webview.postMessage({ command: "show_past_screen", data: data });
-    //         this.mode = "multi";
-    //     }
-
-    // }
 
     public setMode(mode: string) {
         this.mode = mode;
