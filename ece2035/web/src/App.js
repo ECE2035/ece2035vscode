@@ -65,6 +65,8 @@ function App() {
       }
     });
 
+    // To prevent the risk of data being sent to the website before loading,
+    // all commands will enter a queue until this ready command is posted
     vscode.postMessage({ command: 'ready' });
 
   }, [])
@@ -73,6 +75,25 @@ function App() {
 
   const toggleInstructions = () => {
     setShowInstructions(!showInstructions);
+  }
+
+  const dumpToMemory = () => {
+
+    // memory is int[] for each byte, combine every 4 
+    let currentAddr = 0;
+
+    let output = "";
+
+    for (let i = 0; i < memoryData; i += 4) {
+      output += currentAddr;
+
+      let val = memoryData[i] + memoryData[i + 1] 
+       + memoryData[i + 2] + memoryData[i + 3];
+
+       output += "      " + val;
+    }
+
+    navigator.clipboard.writeText(output);
   }
 
   return (
@@ -84,6 +105,10 @@ function App() {
         <div className="checkmark"></div>
         <span>Show instructions</span>
       </label>
+
+      <button onClick={() => dumpToMemory()} id="save_button" style={{ marginRight: "0.50rem", height: "2rem" }} className="primary-button">Dump Memory</button>
+      
+
       <div className='flex-container'>
         <div>
           <MemoryView showInstructions={showInstructions} title={"Memory"} gp={gp} baseAddress={baseAddress} memoryData={memoryData} oldMemory={oldMemory} />

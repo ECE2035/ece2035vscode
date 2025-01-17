@@ -20,7 +20,7 @@ type passIn = {
 
 
 export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
-    
+
     private _onDidChangeTreeData: vscode.EventEmitter<TestCase | undefined> = new vscode.EventEmitter<TestCase | undefined>();
     readonly onDidChangeTreeData: vscode.Event<TestCase | undefined> = this._onDidChangeTreeData.event;
 
@@ -28,7 +28,7 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
     private context: vscode.ExtensionContext;
     private useLocalEmulator: boolean;
     private localEmulatorPath: string;
-    
+
 
     public updatedResultCallback: any;
 
@@ -206,6 +206,8 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
         let completedTestCases = 0;
         let passedTestCases = 0;
 
+        let outputLog = "";
+
         //const debugConsole = vscode.debug.activeDebugConsole;
 
         const executor = new TestCaseExecutor(binPath, (result: TestCaseExecutionResult) => {
@@ -226,7 +228,7 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
                     averageReg += result.regUsed;
                     averageMem += result.memUsed;
 
-                    if(result.status === "pass"){
+                    if (result.status === "pass") {
                         averagePassDi += result.di;
                         averagePassSi += result.si;
                         averagePassReg += result.regUsed;
@@ -267,14 +269,13 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
 
                         outputChannel.show(true);  // Make sure the Output Channel is visible
                         //put them all on the same line
-                        outputChannel.appendLine("The metric results of your test cases are: ");
-                        outputChannel.appendLine(`Average DI: ${averageDi}, SI: ${averageSi}, Reg: ${averageReg}, Mem: ${averageMem}`);
-                        if(passedTestCases === 0){
-                            outputChannel.appendLine('All test cases failed, go through your program to ensure you have no errors ' + 
-                            'and that you have read the assignment write up carefully to ensure you are reporting your answers correctly.');
+                        outputLog += ("The metric results of your test cases are: \n");
+                        if (passedTestCases === 0) {
+                            outputLog += ('All test cases failed, go through your program to ensure you have no errors ' +
+                                'and that you have read the assignment write up carefully to ensure you are reporting your answers correctly.\n');
                         }
-                        else{
-                            outputChannel.appendLine(`Average Passed Test Cases DI: ${averagePassDi}, SI: ${averagePassSi}, Reg: ${averagePassReg}, Mem: ${averagePassMem}`);
+                        else {
+                            outputLog += (`Average Passed Test Cases DI: ${averagePassDi}, SI: ${averagePassSi}, Reg: ${averagePassReg}, Mem: ${averagePassMem}\n`);
                         }
                         // Optionally show information to the user if not in debug mode
                         vscode.window.showInformationMessage(
@@ -286,20 +287,16 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
                             reg: averageReg,
                             mem: averageMem
                         };
+
                         screenManager.openScreenPanel();
                         if (screenManager.getScreenPanel()) {
-                            let workspaceFolders = vscode.workspace.workspaceFolders;
-                        
-
                             let data = {
-                                status: "done", 
+                                status: "done",
                                 stats: pass,
                             };
                             const screenPanel = screenManager.getScreenPanel();
                             if (screenPanel) {
-                                console.log("attempting to post");
-                                screenManager.postCommand({ command: "show_multi_screen", data: data });
-                                console.log("after");
+                                screenManager.postCommand({ command: "show_multi_screen", data: data, log: outputLog });
                             }
 
                             console.log(data);
@@ -319,12 +316,12 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
             this.testCases[i].updateIcon("running");
         }
         executor.execute(assignmentCode, assemblyCode, seeds);
-        
+
     }
 
-    public async handleMultiExecute(amount: number, context: vscode.ExtensionContext){
+    public async handleMultiExecute(amount: number, context: vscode.ExtensionContext) {
         //globalContext = context;
-	    screenManager = new ScreenManager(context);
+        screenManager = new ScreenManager(context);
         let workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders || workspaceFolders.length === 0 || !workspaceFolders[0]) {
             vscode.window.showErrorMessage("No workspace is opened. Please open a workspace to run test cases.");
@@ -349,97 +346,91 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
         let averageDi = 0;
         let averageSi = 0;
         let averageReg = 0;
-        let averageMem = 0; 
+        let averageMem = 0;
 
         let completedTestCases = 0;
         let failedSeeds = 0;
 
         let output;
+
+        let outputLog = "";
+
         outputChannel.show(true);
-        outputChannel.appendLine("Running MultiExecute with amount: " + amount);
+        outputLog += ("Running MultiExecute with amount: " + amount + "\n");
         const executor = new TestCaseExecutor(binPath, (result: TestCaseExecutionResult) => {
-                    console.debug("Running seed: " + result.seed);
-                    averageDi += result.di;
-                    averageSi += result.si;
-                    averageReg += result.regUsed;
-                    averageMem += result.memUsed;
-                    completedTestCases++;
-                    if (result.status === "fail") {
-                        outputChannel.appendLine(`Seed ${result.seed} failed`);
-                        failedSeeds++;
+            console.debug("Running seed: " + result.seed);
+            averageDi += result.di;
+            averageSi += result.si;
+            averageReg += result.regUsed;
+            averageMem += result.memUsed;
+            completedTestCases++;
+            if (result.status === "fail") {
+                outputLog += (`Seed ${result.seed} failed\n`);
+                failedSeeds++;
+            }
+            if (completedTestCases === amount) {
+                averageDi /= amount;
+                averageSi /= amount;
+                averageReg /= amount;
+                averageMem /= amount;
+
+                averageDi = parseFloat(averageDi.toFixed(2));
+                averageSi = parseFloat(averageSi.toFixed(2));
+                averageReg = parseFloat(averageReg.toFixed(2));
+                averageMem = parseFloat(averageMem.toFixed(2));
+
+                outputLog += ("The metric results of your MultiExecute are: \n");
+                if (failedSeeds === amount) {
+                    outputLog += ('All seeds failed, go through your program to ensure you have no errors ' +
+                        'and that you have read the assignment write up carefully to ensure you are reporting your answers correctly.\n');
+                }
+
+                let passPercentage = ((amount - failedSeeds) / amount) * 100;
+                outputLog += (`Pass Rate: (${passPercentage}%)\n`);
+                outputLog += ('Note that the Pass Rate is not indicative of your final grade, please ensure to exhaustively test your code.\n');
+                output = [averageDi, averageSi, averageReg, averageMem];
+                //let output2;
+
+
+                let pass: passIn = {
+                    di: averageDi,
+                    si: averageSi,
+                    reg: averageReg,
+                    mem: averageMem
+                };
+                screenManager.openScreenPanel();
+                if (screenManager.getScreenPanel()) {
+
+                    let data = {
+                        status: "done",
+                        stats: pass,
+                    };
+                    const screenPanel = screenManager.getScreenPanel();
+                    if (screenPanel) {
+                        screenManager.postCommand({ command: "show_multi_screen", data: data, log: outputLog });
                     }
-                    if (completedTestCases === amount) {
-                        averageDi /= amount;
-                        averageSi /= amount;
-                        averageReg /= amount;
-                        averageMem /= amount;
 
-                        averageDi = parseFloat(averageDi.toFixed(2));
-                        averageSi = parseFloat(averageSi.toFixed(2));
-                        averageReg = parseFloat(averageReg.toFixed(2));
-                        averageMem = parseFloat(averageMem.toFixed(2));
-
-                        outputChannel.appendLine("The metric results of your MultiExecute are: ");
-                        if(failedSeeds === amount){
-                            outputChannel.appendLine('All seeds failed, go through your program to ensure you have no errors ' +
-                            'and that you have read the assignment write up carefully to ensure you are reporting your answers correctly.');
-                        }
-                        else{
-                            outputChannel.appendLine(`Average DI: ${averageDi}, SI: ${averageSi}, Reg: ${averageReg}, Mem: ${averageMem}`);
-                        }
-                        let passPercentage = ((amount - failedSeeds) / amount) * 100;
-                        outputChannel.appendLine(`Pass Rate: (${passPercentage}%)`);
-                        outputChannel.appendLine('Note that the Pass Rate is not indicative of your final grade, please ensure to exhaustively test your code.');
-                        output = [averageDi, averageSi, averageReg, averageMem];
-                        //let output2;
-
-                       
-                        let pass: passIn = {
-                            di: averageDi,
-                            si: averageSi,
-                            reg: averageReg,
-                            mem: averageMem
-                        };
-                        console.log("inside " + output);
-                        screenManager.openScreenPanel();
-                        if (screenManager.getScreenPanel()) {
-                            let workspaceFolders = vscode.workspace.workspaceFolders;
-                        
-
-                            let data = {
-                                status: "done", 
-                                stats: pass,
-                            };
-                            const screenPanel = screenManager.getScreenPanel();
-                            if (screenPanel) {
-                                console.log("attempting to post");
-                                console.log({data});
-                                screenManager.postCommand({ command: "show_multi_screen", data: data });
-                                console.log("after");
-                            }
-
-                            console.log(data);
-                            screenManager.setMode("multi");
-                            //return output;
-                        }
-                    }
-                 });
+                    console.log(data);
+                    screenManager.setMode("multi");
+                    //return output;
+                }
+            }
+        });
         let seeds: string[] = [];
         for (let i = 0; i < amount; i++) {
             //push a random seed instead
             seeds.push(Math.floor(Math.random() * 1000000000).toString());
         }
-        
+
 
         executor.execute(assignmentCode, assemblyCode, seeds);
-        
+
         console.log("outside" + output);
         //return output;
     }
 
     public async debugTestCaseHandler(item: any) {
         // item should be a TestCase
-        let title = item.label;
         let seed = item.description;
         let workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders || workspaceFolders.length === 0 || !workspaceFolders[0]) {

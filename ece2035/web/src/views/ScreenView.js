@@ -70,9 +70,8 @@ function showPastScreen(data, setStatus) {
 
   let newImg = new Image();
   let srcUrl = data.image;
-  console.log("url", srcUrl);
 
-  newImg.onload = function () {
+  newImg.onload = function() {
     let height = newImg.height;
     let width = newImg.width;
     img.width = width;
@@ -157,12 +156,12 @@ function showMultiScreen(data, status, setStatus) {
 
 export default function ScreenView({ vscode }) {
   const [status, setStatus] = useState(BadgeType.IN_PROGRESS);
+  const [log, setLog] = useState("");
 
   useEffect(() => {
 
     window.addEventListener('message', event => {
       const message = event.data; // Received message
-      console.log("received theeeeeeee", message.command);
       switch (message.command) {
         case 'screen_update':
           handleUpdateScreen(message.data, setStatus);
@@ -171,9 +170,13 @@ export default function ScreenView({ vscode }) {
           showPastScreen(message.data, setStatus);
           break;
         case "show_multi_screen":
-          console.log("Showing multi exec with ");
-          console.log({ data: message });
           showMultiScreen(message.data, message.data.status, setStatus);
+          setLog(message.log);
+
+          // Hide canvas image
+          let canvas = document.getElementById("screen");
+          canvas.hidden = true;
+
           break;
         case 'context_update':
           seed = message.data.seed;
@@ -184,39 +187,48 @@ export default function ScreenView({ vscode }) {
     });
   }, [])
 
+  const handleSaveTestCase = () => {
+    saveTestCase(vscode)
+  }
+
+  const LogLineFormatted = ({ line }) => (
+    <div style={{ color: line.includes("fail") ? "red" : "" }}>
+      {line}
+    </div>
+  )
+
+  const StatsDisplay = ({title, value, id}) => (
+    <div style={{ borderRadius: '0.5rem' }}>
+      <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#718096' }}>{title}</p>
+      <p id={id} style={{ fontSize: '1.25rem', fontWeight: '700' }}>{value}</p>
+    </div>
+  )
+
   return <>
     <body>
       <div style={{ display: "flex", alignItems: "center" }}>
         <h2 style={{ marginRight: "2rem" }}>RISC-V Screen View</h2>
 
-        <button onClick={() => { saveTestCase(vscode) }} id="save_button" style={{ marginRight: "0.50rem", height: "2rem" }} className="primary-button">Save as Testcase</button>
-
+        <button onClick={handleSaveTestCase} id="save_button" style={{ marginRight: "0.50rem", height: "2rem" }} className="primary-button">Save as Testcase</button>
 
         <Badge badgeType={status} />
       </div>
+
+      {
+        log.split("\n")
+          .map((line, index) => <LogLineFormatted index={index} line={line} />)
+      }
+
       <div style={{ display: "flex", justifyContent: "center" }}>
         <canvas id="screen" width="160" height="160"></canvas>
         <img alt="pattern" width="160" height="160" hidden="true" id="pastScreen" />
       </div>
 
-
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))" }}>
-        <div style={{ borderRadius: '0.5rem' }}>
-          <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#718096' }}>Dynamic Instructions</p>
-          <p id="stats-di" style={{ fontSize: '1.25rem', fontWeight: '700' }}>0</p>
-        </div>
-        <div style={{ borderRadius: '0.5rem' }}>
-          <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#718096' }}>Static Instructions</p>
-          <p id="stats-si" style={{ fontSize: '1.25rem', fontWeight: '700' }}>0</p>
-        </div>
-        <div style={{ borderRadius: '0.5rem' }}>
-          <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#718096' }}>Registers Used</p>
-          <p id="stats-registers" style={{ fontSize: '1.25rem', fontWeight: '700' }}>0</p>
-        </div>
-        <div style={{ borderRadius: '0.5rem' }}>
-          <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#718096' }}>Memory Used</p>
-          <p id="stats-memory" style={{ fontSize: '1.25rem', fontWeight: '700' }}>0</p>
-        </div>
+        <StatsDisplay title={"Dynamic Instructions"} value={0} id={"stats-di"}/>
+        <StatsDisplay title={"Static Instructions"} value={0} id={"stats-si"}/>
+        <StatsDisplay title={"Registers Used"} value={0} id={"stats-registers"}/>
+        <StatsDisplay title={"Memory Used"} value={0} id={"stats-memory"}/>
       </div>
     </body>
 

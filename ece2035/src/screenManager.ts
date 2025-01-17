@@ -175,13 +175,10 @@ export class ScreenManager {
         // If the webview hasn't been initialized yet,
         // enqueue onto the command buffer .As soon as the 
         // ready signal is sent, these are sent in bulk
-        console.log(this.screenPanel);
 
         if (!this.screenInitialized) {
-            console.log("screen not intiia;liozed");
             this.commandQueue.push(args);
         } else {
-            console.log("screen initialzied");
 
             this.screenPanel?.webview.postMessage(args);
         }
@@ -190,10 +187,7 @@ export class ScreenManager {
     public showTestCase(testCase: TestCase) {
         this.openScreenPanel();
 
-        console.log("hello i am test case abnd going to show past screen");
-
         if (this.screenPanel) {
-            console.log("actually going to");
             let workspaceFolders = vscode.workspace.workspaceFolders;
 
             let data = {
