@@ -87,43 +87,37 @@ function showPastScreen(data, setStatus) {
 }
 
 function updateStats(stats, status, setStatus) {
-  let newStatus;
+  let badge;
 
   console.log("set status to ", status);
 
   switch (status) {
     case "passed":
     case "pass":
-      newStatus = BadgeType.PASSED;
+      badge = BadgeType.PASSED;
       break;
     case "failed":
     case "fail":
-      newStatus = BadgeType.FAILED;
+      badge = BadgeType.FAILED;
       break;
     case "unknown":
-      newStatus = BadgeType.NOT_STARTED;
+      badge = BadgeType.NOT_STARTED;
       break;
     case "done":
-      newStatus = BadgeType.DONE;
+      badge = BadgeType.DONE;
       break;
     default:
-      newStatus = BadgeType.IN_PROGRESS;
+      badge = BadgeType.IN_PROGRESS;
       break;
   }
 
-  setStatus(newStatus);
-
-  if (stats.di === undefined) {
-    stats.di = "??";
-    stats.si = "??";
-    stats.reg = "??";
-    stats.mem = "??";
-  }
-
-  document.getElementById("stats-di").innerText = stats.di;
-  document.getElementById("stats-si").innerText = stats.si;
-  document.getElementById("stats-registers").innerText = stats.reg;
-  document.getElementById("stats-memory").innerText = stats.mem;
+  setStatus({
+    badge: badge,
+    di: stats.di,
+    si: stats.si,
+    reg: stats.reg,
+    mem: stats.mem
+  });
 }
 
 
@@ -155,8 +149,22 @@ function showMultiScreen(data, status, setStatus) {
 }
 
 export default function ScreenView({ vscode }) {
-  const [status, setStatus] = useState(BadgeType.IN_PROGRESS);
+  const [{
+    badge,
+    di,
+    si,
+    reg,
+    mem
+  }, setStatus] = useState({
+    badge: BadgeType.IN_PROGRESS,
+    di: "??",
+    si: "??",
+    reg: "??",
+    mem: "??"
+  });
   const [log, setLog] = useState("");
+
+  const [ title, setTitle] = useState("RISC-V Screen View");
 
   useEffect(() => {
 
@@ -165,9 +173,13 @@ export default function ScreenView({ vscode }) {
       switch (message.command) {
         case 'screen_update':
           handleUpdateScreen(message.data, setStatus);
+
+          // update stats
           break;
         case 'show_past_screen':
           showPastScreen(message.data, setStatus);
+
+          // update stats
           break;
         case "show_multi_screen":
           showMultiScreen(message.data, message.data.status, setStatus);
@@ -176,6 +188,8 @@ export default function ScreenView({ vscode }) {
           // Hide canvas image
           let canvas = document.getElementById("screen");
           canvas.hidden = true;
+
+          setTitle("RISCV MultiExec Results")
 
           break;
         case 'context_update':
@@ -192,7 +206,7 @@ export default function ScreenView({ vscode }) {
   }
 
   const LogLineFormatted = ({ line }) => (
-    <div style={{ color: line.includes("fail") ? "red" : "" }}>
+    <div style={{ color: line.includes("fail") ? "tomato" : "" }}>
       {line}
     </div>
   )
@@ -207,11 +221,14 @@ export default function ScreenView({ vscode }) {
   return <>
     <body>
       <div style={{ display: "flex", alignItems: "center" }}>
-        <h2 style={{ marginRight: "2rem" }}>RISC-V Screen View</h2>
+        <h2 style={{ marginRight: "2rem" }}>{title}</h2>
 
-        <button onClick={handleSaveTestCase} id="save_button" style={{ marginRight: "0.50rem", height: "2rem" }} className="primary-button">Save as Testcase</button>
+        <div className="button-container">
+          <button onClick={handleSaveTestCase} id="save_button" style={{ marginRight: "0.50rem", height: "2rem" }} className="primary-button">Save Testcase</button>
+          
+          <Badge badgeType={badge} />
+        </div>
 
-        <Badge badgeType={status} />
       </div>
 
       {
@@ -225,10 +242,10 @@ export default function ScreenView({ vscode }) {
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))" }}>
-        <StatsDisplay title={"Dynamic Instructions"} value={0} id={"stats-di"}/>
-        <StatsDisplay title={"Static Instructions"} value={0} id={"stats-si"}/>
-        <StatsDisplay title={"Registers Used"} value={0} id={"stats-registers"}/>
-        <StatsDisplay title={"Memory Used"} value={0} id={"stats-memory"}/>
+        <StatsDisplay title={"Dynamic Instructions"} value={di}/> 
+        <StatsDisplay title={"Static Instructions"} value={si}/>
+        <StatsDisplay title={"Registers Used"} value={reg}/>
+        <StatsDisplay title={"Memory Used"} value={mem}/>
       </div>
     </body>
 

@@ -42,6 +42,7 @@
   color: var(--vscode-button-foreground);
   border: none;
   cursor: pointer;
+  flex-shrink: 0;
   padding-top: 6px;
   padding-bottom: 6px;
   padding-left: 20px;
@@ -229,4 +230,18 @@ td {
   .flex-container {
     flex-direction: row;
   }
+}
+
+@media (width <= 400px) {
+  .button-container {
+    flex-direction: column !important;
+    row-gap: 0.5rem;
+    min-width: 9rem;
+    
+  }
+}
+
+.button-container {
+  display: flex;
+  flex-direction: row;
 }

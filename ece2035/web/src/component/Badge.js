@@ -44,6 +44,7 @@ export default function Badge({ badgeType }) {
   return (
     <div style={{
       display: "flex",
+      flexShrink: 0,
       alignItems: "center",
       paddingLeft: "1.75rem",
       paddingRight: "1.75rem",
