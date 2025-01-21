@@ -92,6 +92,9 @@ function updateStats(stats, status, setStatus) {
   console.log("set status to ", status);
 
   switch (status) {
+    case "finished":
+      badge = BadgeType.FINISHED;
+      break;
     case "passed":
     case "pass":
       badge = BadgeType.PASSED;

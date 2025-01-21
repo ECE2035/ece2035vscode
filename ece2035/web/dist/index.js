@@ -27778,6 +27778,9 @@ function updateStats(stats, status, setStatus) {
     let badge;
     console.log("set status to ", status);
     switch(status){
+        case "finished":
+            badge = (0, _badge.BadgeType).FINISHED;
+            break;
         case "passed":
         case "pass":
             badge = (0, _badge.BadgeType).PASSED;
@@ -27874,7 +27877,7 @@ function ScreenView({ vscode }) {
             children: line
         }, void 0, false, {
             fileName: "src/views/ScreenView.js",
-            lineNumber: 209,
+            lineNumber: 212,
             columnNumber: 5
         }, this);
     const StatsDisplay = ({ title, value, id })=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -27891,7 +27894,7 @@ function ScreenView({ vscode }) {
                     children: title
                 }, void 0, false, {
                     fileName: "src/views/ScreenView.js",
-                    lineNumber: 216,
+                    lineNumber: 219,
                     columnNumber: 7
                 }, this),
                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
@@ -27903,13 +27906,13 @@ function ScreenView({ vscode }) {
                     children: value
                 }, void 0, false, {
                     fileName: "src/views/ScreenView.js",
-                    lineNumber: 217,
+                    lineNumber: 220,
                     columnNumber: 7
                 }, this)
             ]
         }, void 0, true, {
             fileName: "src/views/ScreenView.js",
-            lineNumber: 215,
+            lineNumber: 218,
             columnNumber: 5
         }, this);
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
@@ -27928,7 +27931,7 @@ function ScreenView({ vscode }) {
                             children: title
                         }, void 0, false, {
                             fileName: "src/views/ScreenView.js",
-                            lineNumber: 224,
+                            lineNumber: 227,
                             columnNumber: 9
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -27945,26 +27948,26 @@ function ScreenView({ vscode }) {
                                     children: "Save Testcase"
                                 }, void 0, false, {
                                     fileName: "src/views/ScreenView.js",
-                                    lineNumber: 227,
+                                    lineNumber: 230,
                                     columnNumber: 11
                                 }, this),
                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _badgeDefault.default), {
                                     badgeType: badge
                                 }, void 0, false, {
                                     fileName: "src/views/ScreenView.js",
-                                    lineNumber: 229,
+                                    lineNumber: 232,
                                     columnNumber: 11
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "src/views/ScreenView.js",
-                            lineNumber: 226,
+                            lineNumber: 229,
                             columnNumber: 9
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/views/ScreenView.js",
-                    lineNumber: 223,
+                    lineNumber: 226,
                     columnNumber: 7
                 }, this),
                 log.split("\n").map((line, index)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(LogLineFormatted, {
@@ -27972,7 +27975,7 @@ function ScreenView({ vscode }) {
                         line: line
                     }, void 0, false, {
                         fileName: "src/views/ScreenView.js",
-                        lineNumber: 236,
+                        lineNumber: 239,
                         columnNumber: 33
                     }, this)),
                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -27987,7 +27990,7 @@ function ScreenView({ vscode }) {
                             height: "160"
                         }, void 0, false, {
                             fileName: "src/views/ScreenView.js",
-                            lineNumber: 240,
+                            lineNumber: 243,
                             columnNumber: 9
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("img", {
@@ -27998,13 +28001,13 @@ function ScreenView({ vscode }) {
                             id: "pastScreen"
                         }, void 0, false, {
                             fileName: "src/views/ScreenView.js",
-                            lineNumber: 241,
+                            lineNumber: 244,
                             columnNumber: 9
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/views/ScreenView.js",
-                    lineNumber: 239,
+                    lineNumber: 242,
                     columnNumber: 7
                 }, this),
                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -28018,7 +28021,7 @@ function ScreenView({ vscode }) {
                             value: di
                         }, void 0, false, {
                             fileName: "src/views/ScreenView.js",
-                            lineNumber: 245,
+                            lineNumber: 248,
                             columnNumber: 9
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(StatsDisplay, {
@@ -28026,7 +28029,7 @@ function ScreenView({ vscode }) {
                             value: si
                         }, void 0, false, {
                             fileName: "src/views/ScreenView.js",
-                            lineNumber: 246,
+                            lineNumber: 249,
                             columnNumber: 9
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(StatsDisplay, {
@@ -28034,7 +28037,7 @@ function ScreenView({ vscode }) {
                             value: reg
                         }, void 0, false, {
                             fileName: "src/views/ScreenView.js",
-                            lineNumber: 247,
+                            lineNumber: 250,
                             columnNumber: 9
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(StatsDisplay, {
@@ -28042,19 +28045,19 @@ function ScreenView({ vscode }) {
                             value: mem
                         }, void 0, false, {
                             fileName: "src/views/ScreenView.js",
-                            lineNumber: 248,
+                            lineNumber: 251,
                             columnNumber: 9
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/views/ScreenView.js",
-                    lineNumber: 244,
+                    lineNumber: 247,
                     columnNumber: 7
                 }, this)
             ]
         }, void 0, true, {
             fileName: "src/views/ScreenView.js",
-            lineNumber: 222,
+            lineNumber: 225,
             columnNumber: 5
         }, this)
     }, void 0, false);
@@ -28086,11 +28089,14 @@ const BadgeType = Object.freeze({
     FAILED: Symbol("failed"),
     IN_PROGRESS: Symbol("in-progress"),
     NOT_STARTED: Symbol("not-started"),
-    DONE: Symbol('done')
+    DONE: Symbol('done'),
+    FINISHED: Symbol('finished')
 });
 function Badge({ badgeType }) {
     const getBackgroundColor = ()=>{
         switch(badgeType){
+            case BadgeType.FINISHED:
+                return "#046c4e";
             case BadgeType.PASSED:
                 return "#046c4e";
             case BadgeType.FAILED:
@@ -28107,6 +28113,8 @@ function Badge({ badgeType }) {
     };
     const getForegroundColor = ()=>{
         switch(badgeType){
+            case BadgeType.FINISHED:
+                return "#efefef";
             case BadgeType.PASSED:
                 return "#efefef";
             case BadgeType.FAILED:
@@ -28123,6 +28131,8 @@ function Badge({ badgeType }) {
     };
     const getText = ()=>{
         switch(badgeType){
+            case BadgeType.FINISHED:
+                return "Finished";
             case BadgeType.PASSED:
                 return "Passed";
             case BadgeType.FAILED:
@@ -28153,7 +28163,7 @@ function Badge({ badgeType }) {
         children: getText()
     }, void 0, false, {
         fileName: "src/component/Badge.js",
-        lineNumber: 45,
+        lineNumber: 49,
         columnNumber: 5
     }, this);
 }
@@ -28245,7 +28255,7 @@ $RefreshReg$(_c, "DumpMemoryButton");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","react":"21dqq","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","react/jsx-dev-runtime":"iTorj"}],"bOGRk":[function(require,module,exports,__globalThis) {
+},{"react/jsx-dev-runtime":"iTorj","react":"21dqq","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"bOGRk":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 const reportWebVitals = (onPerfEntry)=>{

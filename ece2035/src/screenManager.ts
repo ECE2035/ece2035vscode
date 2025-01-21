@@ -23,7 +23,6 @@ export class ScreenManager {
                 createDebugAdapterTracker: (session: vscode.DebugSession) => ({
                     onWillReceiveMessage: async (message: any) => {
                         if (message.command === 'next' || message.command === 'stepIn' || message.command === 'stepOut' || message.command === 'continue') {
-                            console.log("found that event");
                             await this.readMemory();
                         }
                     }
@@ -50,7 +49,6 @@ export class ScreenManager {
         );
 
         this.screenPanel.webview.onDidReceiveMessage((message) => {
-            console.log("Received ", message);
 
             // There's a chance we send data before the webview can be properly loaded
             // on slower machines. Instead, we have a "ready" signal the webview will
@@ -88,11 +86,6 @@ export class ScreenManager {
         vscode.window.onDidChangeActiveColorTheme(e => {
             this.setWebviewContent();
         });
-
-        // Only send an initial memory request if we're currently debugging
-        if (vscode.debug.activeDebugSession !== undefined) {
-            this.readMemory();
-        }
     }
 
     public async readMemory() {
@@ -152,7 +145,6 @@ export class ScreenManager {
         if (this.screenPanel) {
             this.screenPanel.dispose();
             this.screenOpened = false;
-            console.log("CLOSING SCREEN PANEL");
         }
     }
 
