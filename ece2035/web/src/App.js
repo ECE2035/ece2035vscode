@@ -3,6 +3,7 @@ import MemoryView from './views/MemoryView';
 import ScreenView from './views/ScreenView';
 import { useEffect, useRef, useState } from 'react';
 import { base64ToBytes } from './util/hexUtils';
+import DumpMemoryButton from './component/DumpMemoryButton';
 
 // eslint-disable-next-line no-undef
 const vscode = acquireVsCodeApi();
@@ -73,26 +74,6 @@ function App() {
 
   const baseAddress = 0;
 
-  const dumpToMemory = () => {
-
-    // memory is int[] for each byte, combine every 4 
-    let output = "";
-
-
-    for (let i = 0; i < memoryData.length; i += 4) {
-
-      let val = memoryData[i] + memoryData[i + 1]
-        + memoryData[i + 2] + memoryData[i + 3];
-
-      let line = String(val).padStart(10, " ");
-
-      line = i + line + ":" + val;
-
-      output += line + "\n";
-    }
-
-    navigator.clipboard.writeText(output);
-  }
 
   return (
     <>
@@ -101,8 +82,7 @@ function App() {
       {isDebugging ? <>
 
         <div style={{ display: "flex", flexDirection: "column", rowGap: "0.5rem" }}>
-
-          <button onClick={dumpToMemory} id="save_button" style={{ marginRight: "0.50rem", height: "2rem" }} className="primary-button">Dump Memory</button>
+          <DumpMemoryButton memoryData={memoryData}/>
         </div>
 
         <div className='flex-container'>

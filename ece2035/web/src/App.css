@@ -49,6 +49,18 @@
   padding-right: 20px;
 }
 
+.copied-button {
+  background-color: #046c4e;
+  color: var(--vscode-button-foreground);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding-top: 6px;
+  padding-bottom: 6px;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
 .primary-button:hover {
   background-color: var(--vscode-button-hoverBackground);
 }

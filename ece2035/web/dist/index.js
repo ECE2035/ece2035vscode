@@ -27271,6 +27271,8 @@ var _screenView = require("./views/ScreenView");
 var _screenViewDefault = parcelHelpers.interopDefault(_screenView);
 var _react = require("react");
 var _hexUtils = require("./util/hexUtils");
+var _dumpMemoryButton = require("./component/DumpMemoryButton");
+var _dumpMemoryButtonDefault = parcelHelpers.interopDefault(_dumpMemoryButton);
 var _s = $RefreshSig$();
 // eslint-disable-next-line no-undef
 const vscode = acquireVsCodeApi();
@@ -27327,28 +27329,13 @@ function App() {
         });
     }, []);
     const baseAddress = 0;
-    const toggleInstructions = ()=>{
-        setShowInstructions(!showInstructions);
-    };
-    const dumpToMemory = ()=>{
-        // memory is int[] for each byte, combine every 4 
-        let output = "";
-        console.log("memory data length is " + memoryData.length);
-        for(let i = 0; i < memoryData.length; i += 4){
-            let val = memoryData[i] + memoryData[i + 1] + memoryData[i + 2] + memoryData[i + 3];
-            let line = String(val).padStart(10, " ");
-            line = i + line + ":" + val;
-            output += line + "\n";
-        }
-        navigator.clipboard.writeText(output);
-    };
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
         children: [
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _screenViewDefault.default), {
                 vscode: vscode
             }, void 0, false, {
                 fileName: "src/App.js",
-                lineNumber: 104,
+                lineNumber: 80,
                 columnNumber: 7
             }, this),
             isDebugging ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
@@ -27359,23 +27346,16 @@ function App() {
                             flexDirection: "column",
                             rowGap: "0.5rem"
                         },
-                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
-                            onClick: dumpToMemory,
-                            id: "save_button",
-                            style: {
-                                marginRight: "0.50rem",
-                                height: "2rem"
-                            },
-                            className: "primary-button",
-                            children: "Dump Memory"
+                        children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _dumpMemoryButtonDefault.default), {
+                            memoryData: memoryData
                         }, void 0, false, {
                             fileName: "src/App.js",
-                            lineNumber: 110,
+                            lineNumber: 85,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "src/App.js",
-                        lineNumber: 108,
+                        lineNumber: 84,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -27391,12 +27371,12 @@ function App() {
                                     oldMemory: oldMemory
                                 }, void 0, false, {
                                     fileName: "src/App.js",
-                                    lineNumber: 115,
+                                    lineNumber: 90,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "src/App.js",
-                                lineNumber: 114,
+                                lineNumber: 89,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -27410,18 +27390,18 @@ function App() {
                                     oldMemory: oldMemory
                                 }, void 0, false, {
                                     fileName: "src/App.js",
-                                    lineNumber: 118,
+                                    lineNumber: 93,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "src/App.js",
-                                lineNumber: 117,
+                                lineNumber: 92,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "src/App.js",
-                        lineNumber: 113,
+                        lineNumber: 88,
                         columnNumber: 9
                     }, this)
                 ]
@@ -27440,7 +27420,7 @@ $RefreshReg$(_c, "App");
   window.$RefreshReg$ = prevRefreshReg;
   window.$RefreshSig$ = prevRefreshSig;
 }
-},{"react/jsx-dev-runtime":"iTorj","./App.css":"6n0o6","./views/MemoryView":"fTnS2","./views/ScreenView":"ifQnE","react":"21dqq","./util/hexUtils":"7XPCE","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru"}],"6n0o6":[function() {},{}],"fTnS2":[function(require,module,exports,__globalThis) {
+},{"react/jsx-dev-runtime":"iTorj","./App.css":"6n0o6","./views/MemoryView":"fTnS2","./views/ScreenView":"ifQnE","react":"21dqq","./util/hexUtils":"7XPCE","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","./component/DumpMemoryButton":"jyPfs"}],"6n0o6":[function() {},{}],"fTnS2":[function(require,module,exports,__globalThis) {
 var $parcel$ReactRefreshHelpers$8721 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
 var prevRefreshReg = window.$RefreshReg$;
 var prevRefreshSig = window.$RefreshSig$;
@@ -28210,7 +28190,62 @@ function getIntegerFromHexRow(row) {
     return Number(hex);
 }
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bOGRk":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jyPfs":[function(require,module,exports,__globalThis) {
+var $parcel$ReactRefreshHelpers$733d = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
+var prevRefreshReg = window.$RefreshReg$;
+var prevRefreshSig = window.$RefreshSig$;
+$parcel$ReactRefreshHelpers$733d.prelude(module);
+
+try {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "default", ()=>DumpMemoryButton);
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _react = require("react");
+var _s = $RefreshSig$();
+function DumpMemoryButton({ memoryData }) {
+    _s();
+    const [copied, setCopied] = (0, _react.useState)(false);
+    const dumpToMemory = ()=>{
+        // memory is int[] for each byte, combine every 4 
+        let output = "";
+        for(let i = 0; i < memoryData.length; i += 4){
+            let val = memoryData[i] + memoryData[i + 1] + memoryData[i + 2] + memoryData[i + 3];
+            let indexPadded = String(i).padStart(4, "0");
+            const formatted = `${indexPadded}:`.padEnd(4) + String(val).padStart(10);
+            output += formatted + "\n";
+        }
+        navigator.clipboard.writeText(output).then(()=>{
+            setCopied(true);
+            setTimeout(()=>setCopied(false), 1500);
+        });
+    };
+    return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("button", {
+        onClick: dumpToMemory,
+        id: "save_button",
+        style: {
+            marginRight: "0.50rem",
+            height: "2rem"
+        },
+        className: copied ? "copied-button" : "primary-button",
+        children: copied ? "Copied!" : "Dump Memory to Clipboard"
+    }, void 0, false, {
+        fileName: "src/component/DumpMemoryButton.js",
+        lineNumber: 33,
+        columnNumber: 9
+    }, this);
+}
+_s(DumpMemoryButton, "NE86rL3vg4NVcTTWDavsT0hUBJs=");
+_c = DumpMemoryButton;
+var _c;
+$RefreshReg$(_c, "DumpMemoryButton");
+
+  $parcel$ReactRefreshHelpers$733d.postlude(module);
+} finally {
+  window.$RefreshReg$ = prevRefreshReg;
+  window.$RefreshSig$ = prevRefreshSig;
+}
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","react":"21dqq","@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js":"km3Ru","react/jsx-dev-runtime":"iTorj"}],"bOGRk":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 const reportWebVitals = (onPerfEntry)=>{

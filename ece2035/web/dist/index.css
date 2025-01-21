@@ -58,6 +58,15 @@ code {
   padding: 6px 20px;
 }
 
+.copied-button {
+  color: var(--vscode-button-foreground);
+  cursor: pointer;
+  background-color: #046c4e;
+  border: none;
+  flex-shrink: 0;
+  padding: 6px 20px;
+}
+
 .primary-button:hover {
   background-color: var(--vscode-button-hoverBackground);
 }
