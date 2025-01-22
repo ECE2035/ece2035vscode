@@ -17,18 +17,6 @@ export class ScreenManager {
     constructor(context: vscode.ExtensionContext) {
         this.context = context;
         this.mode = "idle";
-
-        context.subscriptions.push(
-            vscode.debug.registerDebugAdapterTrackerFactory('*', {
-                createDebugAdapterTracker: (session: vscode.DebugSession) => ({
-                    onWillReceiveMessage: async (message: any) => {
-                        if (message.command === 'next' || message.command === 'stepIn' || message.command === 'stepOut' || message.command === 'continue') {
-                            await this.readMemory();
-                        }
-                    }
-                })
-            })
-        );
     }
 
     public openScreenPanel() {
@@ -86,55 +74,6 @@ export class ScreenManager {
         vscode.window.onDidChangeActiveColorTheme(e => {
             this.setWebviewContent();
         });
-    }
-
-    public async readMemory() {
-        try {
-            const session = vscode.debug.activeDebugSession;
-
-            if (!session) {
-                vscode.window.showErrorMessage("Attempted to read memory when debugger wasn't running.");
-                return;
-            }
-
-
-            // retrieve the stack pointer register for knowing stack size
-            const stackValue = await session.customRequest('variables', {
-                variablesReference: 2
-            });
-
-            const spAddressString = stackValue.variables[1].value;
-            let spAddress = parseInt(spAddressString, 16);
-            let spStartMagicNumber = 0x7FFFFFF0;
-
-            const stackResponse = await session.customRequest('readMemory', {
-                memoryReference: '',
-                offset: spAddress, // hex of current sp
-                count: (spStartMagicNumber - spAddress) >> 2// retrieve all stack contents
-            });
-
-            // retrieve the gp register for color highlighting
-            const registerValues = await session.customRequest('variables', {
-                variablesReference: 3
-            });
-
-            const gp = registerValues.variables[0];
-
-            const mainMemoryResponse = await session.customRequest('readMemory', {
-                memoryReference: '',
-                offset: parseInt(gp.value), // gp is object, get int32_t val
-                count: 1024, // retrieve all memory contents
-            });
-
-            await this.postCommand({ command: "read_memory", data: { stackMemory: stackResponse.data, mainMemory: mainMemoryResponse.data, gp: gp, sp: spAddress } });
-
-        } catch (err) {
-
-
-            vscode.window.showErrorMessage(`Failed to read memory from debugger: ${err}`);
-
-        }
-
     }
 
     public getScreenPanel() {

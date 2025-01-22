@@ -223,6 +223,11 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
     }
 
     private getFormattedPassAverage(passAvg: number, passedTestCases: number): number {
+        // If the user passes zero test cases, there's a chance for a divide by 0
+        if (passedTestCases === 0) {
+            return 0;
+        }
+
         return parseFloat((passAvg / passedTestCases).toFixed(2));
     }
 

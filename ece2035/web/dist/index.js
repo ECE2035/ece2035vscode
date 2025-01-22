@@ -27277,46 +27277,127 @@ var _s = $RefreshSig$();
 // eslint-disable-next-line no-undef
 const vscode = acquireVsCodeApi();
 const BYTES_PER_ROW = 4;
-function handleReadMemory({ mainMemory, stackMemory, gp, sp, setMemoryData, setStackData, setGp, setSp }) {
-    // data is base64, decode it
-    const stackDecoded = (0, _hexUtils.base64ToBytes)(stackMemory);
-    const memoryDecoded = (0, _hexUtils.base64ToBytes)(mainMemory);
-    setMemoryData(memoryDecoded);
-    setStackData(stackDecoded);
-    setGp(gp["value"]);
-    setSp(sp);
-    if (!initialized) initialized = true;
+const initialState = {
+    memory: {
+        main: null,
+        stack: null
+    },
+    stats: {
+        di: null,
+        mem: null,
+        reg: null,
+        si: null
+    },
+    status: null
+};
+// TODO: This function was (almost) directly ported from the original
+// javascript implementation, and as such uses getElementById and other 
+// non-standard elements you wouldn't see in a React implementation.
+// These should eventually be migrated over to a fully React-based
+// system. 
+function showPastScreen(data) {
+    let img = document.getElementById("pastScreen");
+    let canvas = document.getElementById("screen");
+    let saveButton = document.getElementById("save_button");
+    saveButton.className = "hidden";
+    saveButton.hidden = true;
+    saveButton.disabled = true;
+    saveButton.style = "opacity: 0;";
+    let newImg = new Image();
+    let srcUrl = data.image;
+    newImg.onload = function() {
+        let height = newImg.height;
+        let width = newImg.width;
+        img.width = width;
+        img.height = height;
+        canvas.hidden = true;
+        img.src = srcUrl;
+        img.hidden = false;
+    };
+    newImg.src = srcUrl;
 }
-let initialized = false;
+function showMultiScreen() {
+    let saveButton = document.getElementById("save_button");
+    saveButton.className = "hidden";
+    saveButton.hidden = true;
+    saveButton.disabled = true;
+    saveButton.style = "opacity: 0;";
+}
 function App() {
     _s();
     const oldMemory = (0, _react.useRef)(new Array(128).fill(0));
-    const [stackData, setStackData] = (0, _react.useState)(new Array(128).fill(0));
-    const [memoryData, setMemoryData] = (0, _react.useState)(new Array(128).fill(0));
-    const [gp, setGp] = (0, _react.useState)(0);
-    const [sp, setSp] = (0, _react.useState)(0);
-    const [showInstructions, setShowInstructions] = (0, _react.useState)(false);
-    const [isDebugging, setIsDebugging] = (0, _react.useState)(false);
+    const [{ memory, stats, status }, setState] = (0, _react.useState)(initialState);
+    const [title, setTitle] = (0, _react.useState)("RISC-V Screen View");
+    const [log, setLog] = (0, _react.useState)("");
+    const handleUpdateScreen = (data)=>{
+        let canvas = document.getElementById("screen");
+        let img = document.getElementById("pastScreen");
+        if (img.hidden === false) {
+            img.hidden = true;
+            canvas.hidden = false;
+            let saveButton = document.getElementById("save_button");
+            saveButton.className = "primary-button";
+            saveButton.hidden = false;
+            saveButton.disabled = false;
+            saveButton.style = "display: inline-block; margin-left: 20px;";
+        }
+        if (canvas.width !== data.width || canvas.height !== data.height) {
+            canvas.width = data.width;
+            canvas.height = data.height;
+            canvas.clientWidth = Math.min(canvas.clientWidth, 400);
+            canvas.clientHeight = Math.min(canvas.clientWidth, 400);
+        }
+        let ctx = canvas.getContext("2d");
+        ctx.willReadFrequently = true;
+        for (let update of data.updates){
+            let x = update.region_x;
+            let y = update.region_y;
+            let imageData = ctx.getImageData(x, y, 16, 16);
+            for(let i = 0; i < 16; i++)for(let j = 0; j < 16; j++){
+                let index = (i * 16 + j) * 4;
+                imageData.data[index] = update.data[i * 16 + j] & 0xFF; // red
+                imageData.data[index + 1] = update.data[i * 16 + j] >> 8 & 0xFF; // green
+                imageData.data[index + 2] = update.data[i * 16 + j] >> 16 & 0xFF; // blue
+                imageData.data[index + 3] = 0xFF; // alpha
+            }
+            ctx.putImageData(imageData, x, y);
+        }
+    };
+    const updateData = (data)=>{
+        if (!data.memory || !data.memory.main) {
+            setState(data);
+            return;
+        }
+        const newState = {
+            ...data,
+            memory: {
+                main: (0, _hexUtils.base64ToBytes)(data.memory.main),
+                stack: (0, _hexUtils.base64ToBytes)(data.memory.stack)
+            }
+        };
+        setState(newState);
+    };
     (0, _react.useEffect)(()=>{
         window.addEventListener("message", (event)=>{
             console.log("Received 1", event.data);
-            const { command, data } = event.data;
+            const { command, data, log = "" } = event.data;
             switch(command){
-                case "read_memory":
-                    handleReadMemory({
-                        mainMemory: data.mainMemory,
-                        stackMemory: data.stackMemory,
-                        gp: data.gp,
-                        sp: data.sp,
-                        setMemoryData: setMemoryData,
-                        setStackData: setStackData,
-                        setGp: setGp,
-                        setSp: setSp
-                    });
-                    setIsDebugging(true);
+                case 'screen_update':
+                    handleUpdateScreen(data);
+                    updateData(data);
                     break;
-                case "show_past_screen":
-                    setIsDebugging(false);
+                case 'show_past_screen':
+                    showPastScreen(data);
+                    updateData(data);
+                    break;
+                case "show_multi_screen":
+                    showMultiScreen(data, data.status);
+                    setLog(log);
+                    // Hide canvas image
+                    let canvas = document.getElementById("screen");
+                    canvas.hidden = true;
+                    setTitle("RISC-V MultiExec Results");
+                    updateData(data);
                     break;
                 default:
                     break;
@@ -27332,13 +27413,17 @@ function App() {
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
         children: [
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _screenViewDefault.default), {
-                vscode: vscode
+                vscode: vscode,
+                stats: stats,
+                status: status,
+                log: log,
+                title: title
             }, void 0, false, {
                 fileName: "src/App.js",
-                lineNumber: 80,
+                lineNumber: 178,
                 columnNumber: 7
             }, this),
-            isDebugging ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
+            memory !== undefined && memory.main !== null ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
                 children: [
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                         style: {
@@ -27347,15 +27432,15 @@ function App() {
                             rowGap: "0.5rem"
                         },
                         children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _dumpMemoryButtonDefault.default), {
-                            memoryData: memoryData
+                            memoryData: memory.main
                         }, void 0, false, {
                             fileName: "src/App.js",
-                            lineNumber: 85,
+                            lineNumber: 183,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "src/App.js",
-                        lineNumber: 84,
+                        lineNumber: 182,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -27363,45 +27448,41 @@ function App() {
                         children: [
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                                 children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _memoryViewDefault.default), {
-                                    showInstructions: showInstructions,
                                     title: "Memory",
-                                    gp: gp,
                                     baseAddress: baseAddress,
-                                    memoryData: memoryData,
+                                    memoryData: memory.main,
                                     oldMemory: oldMemory
                                 }, void 0, false, {
                                     fileName: "src/App.js",
-                                    lineNumber: 90,
+                                    lineNumber: 188,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "src/App.js",
-                                lineNumber: 89,
+                                lineNumber: 187,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
                                 children: /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _memoryViewDefault.default), {
                                     reverse: true,
-                                    showInstructions: showInstructions,
                                     title: "Stack",
-                                    gp: gp,
-                                    baseAddress: sp,
-                                    memoryData: stackData,
+                                    baseAddress: 0x7FFFFFF0,
+                                    memoryData: memory.stack,
                                     oldMemory: oldMemory
                                 }, void 0, false, {
                                     fileName: "src/App.js",
-                                    lineNumber: 93,
+                                    lineNumber: 191,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "src/App.js",
-                                lineNumber: 92,
+                                lineNumber: 190,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "src/App.js",
-                        lineNumber: 88,
+                        lineNumber: 186,
                         columnNumber: 9
                     }, this)
                 ]
@@ -27409,7 +27490,7 @@ function App() {
         ]
     }, void 0, true);
 }
-_s(App, "/H4Ksabk9gWZNuZU4I2TByKDFkI=");
+_s(App, "pnIB062UMW/NAeZmSf9G7kf7OAk=");
 _c = App;
 exports.default = App;
 var _c;
@@ -27432,13 +27513,12 @@ parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "default", ()=>MemoryView);
 var _jsxDevRuntime = require("react/jsx-dev-runtime");
 var _app = require("../App");
-function MemoryView({ title, gp, baseAddress, memoryData, oldMemory, showInstructions, reverse, memoryEnd }) {
+function MemoryView({ title, baseAddress, memoryData, oldMemory, reverse }) {
+    if (!memoryData) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {}, void 0, false);
     const rows = Math.ceil(memoryData.length / (0, _app.BYTES_PER_ROW));
     let rowData = [
         ...Array(rows)
     ].map((_, row)=>{
-        const isInstruction = false; //baseAddress + row * BYTES_PER_ROW < gp;
-        if (isInstruction && !showInstructions) return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {}, void 0, false);
         return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
             className: "row",
             children: [
@@ -27447,7 +27527,7 @@ function MemoryView({ title, gp, baseAddress, memoryData, oldMemory, showInstruc
                     children: (baseAddress + row * (0, _app.BYTES_PER_ROW)).toString().padStart(6, "0")
                 }, void 0, false, {
                     fileName: "src/views/MemoryView.js",
-                    lineNumber: 16,
+                    lineNumber: 14,
                     columnNumber: 11
                 }, this),
                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -27459,14 +27539,13 @@ function MemoryView({ title, gp, baseAddress, memoryData, oldMemory, showInstruc
                         if (idx < memoryData.length) {
                             const value = memoryData[idx];
                             let hexIdentifier;
-                            if (!isInstruction) hexIdentifier = "hex-value";
-                            else hexIdentifier = "hex-value-instruction";
+                            hexIdentifier = "hex-value";
                             return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("span", {
                                 className: `${hexIdentifier} hex-value`,
                                 children: value.toString(16).padStart(2, "0")
                             }, void 0, false, {
                                 fileName: "src/views/MemoryView.js",
-                                lineNumber: 36,
+                                lineNumber: 33,
                                 columnNumber: 19
                             }, this);
                         }
@@ -27474,13 +27553,13 @@ function MemoryView({ title, gp, baseAddress, memoryData, oldMemory, showInstruc
                     })
                 }, void 0, false, {
                     fileName: "src/views/MemoryView.js",
-                    lineNumber: 17,
+                    lineNumber: 15,
                     columnNumber: 11
                 }, this)
             ]
         }, void 0, true, {
             fileName: "src/views/MemoryView.js",
-            lineNumber: 15,
+            lineNumber: 13,
             columnNumber: 9
         }, this);
     });
@@ -27491,7 +27570,7 @@ function MemoryView({ title, gp, baseAddress, memoryData, oldMemory, showInstruc
                 children: title
             }, void 0, false, {
                 fileName: "src/views/MemoryView.js",
-                lineNumber: 50,
+                lineNumber: 47,
                 columnNumber: 5
             }, this),
             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -27499,13 +27578,13 @@ function MemoryView({ title, gp, baseAddress, memoryData, oldMemory, showInstruc
                 children: rowData
             }, void 0, false, {
                 fileName: "src/views/MemoryView.js",
-                lineNumber: 52,
+                lineNumber: 49,
                 columnNumber: 5
             }, this)
         ]
     }, void 0, true, {
         fileName: "src/views/MemoryView.js",
-        lineNumber: 49,
+        lineNumber: 46,
         columnNumber: 10
     }, this);
 }
@@ -27710,102 +27789,23 @@ var _badge = require("../component/Badge");
 var _badgeDefault = parcelHelpers.interopDefault(_badge);
 var _s = $RefreshSig$();
 let seed = "";
-function handleUpdateScreen(data, setStatus) {
-    console.log("message recieved! width:", data.width, "height:", data.height, "updates:", data.updates.length);
-    let canvas = document.getElementById("screen");
-    let img = document.getElementById("pastScreen");
-    if (img.hidden === false) {
-        img.hidden = true;
-        canvas.hidden = false;
-        let saveButton = document.getElementById("save_button");
-        saveButton.className = "primary-button";
-        saveButton.hidden = false;
-        saveButton.disabled = false;
-        saveButton.style = "display: inline-block; margin-left: 20px;";
-    }
-    if (canvas.width !== data.width || canvas.height !== data.height) {
-        canvas.width = data.width;
-        canvas.height = data.height;
-        canvas.clientWidth = Math.min(canvas.clientWidth, 400);
-        canvas.clientHeight = Math.min(canvas.clientWidth, 400);
-    }
-    let ctx = canvas.getContext("2d");
-    ctx.willReadFrequently = true;
-    for (let update of data.updates){
-        let x = update.region_x;
-        let y = update.region_y;
-        let imageData = ctx.getImageData(x, y, 16, 16);
-        for(let i = 0; i < 16; i++)for(let j = 0; j < 16; j++){
-            let index = (i * 16 + j) * 4;
-            imageData.data[index] = update.data[i * 16 + j] & 0xFF; // red
-            imageData.data[index + 1] = update.data[i * 16 + j] >> 8 & 0xFF; // green
-            imageData.data[index + 2] = update.data[i * 16 + j] >> 16 & 0xFF; // blue
-            imageData.data[index + 3] = 0xFF; // alpha
-        }
-        ctx.putImageData(imageData, x, y);
-    }
-    // updating stats
-    updateStats(data.stats, data.status, setStatus);
-}
-// TODO: This function was (almost) directly ported from the original
-// javascript implementation, and as such uses getElementById and other 
-// non-standard elements you wouldn't see in a React implementation.
-// These should eventually be migrated over to a fully React-based
-// system. 
-function showPastScreen(data, setStatus) {
-    let img = document.getElementById("pastScreen");
-    let canvas = document.getElementById("screen");
-    let saveButton = document.getElementById("save_button");
-    saveButton.className = "hidden";
-    saveButton.hidden = true;
-    saveButton.disabled = true;
-    saveButton.style = "opacity: 0;";
-    let newImg = new Image();
-    let srcUrl = data.image;
-    newImg.onload = function() {
-        let height = newImg.height;
-        let width = newImg.width;
-        img.width = width;
-        img.height = height;
-        canvas.hidden = true;
-        img.src = srcUrl;
-        img.hidden = false;
-        updateStats(data.stats, data.status, setStatus);
-    };
-    newImg.src = srcUrl;
-}
-function updateStats(stats, status, setStatus) {
-    let badge;
-    console.log("set status to ", status);
-    switch(status){
+function getBadge(str) {
+    switch(str){
         case "finished":
-            badge = (0, _badge.BadgeType).FINISHED;
-            break;
+            return (0, _badge.BadgeType).FINISHED;
         case "passed":
         case "pass":
-            badge = (0, _badge.BadgeType).PASSED;
-            break;
+            return (0, _badge.BadgeType).PASSED;
         case "failed":
         case "fail":
-            badge = (0, _badge.BadgeType).FAILED;
-            break;
+            return (0, _badge.BadgeType).FAILED;
         case "unknown":
-            badge = (0, _badge.BadgeType).NOT_STARTED;
-            break;
+            return (0, _badge.BadgeType).NOT_STARTED;
         case "done":
-            badge = (0, _badge.BadgeType).DONE;
-            break;
+            return (0, _badge.BadgeType).DONE;
         default:
-            badge = (0, _badge.BadgeType).IN_PROGRESS;
-            break;
+            return (0, _badge.BadgeType).IN_PROGRESS;
     }
-    setStatus({
-        badge: badge,
-        di: stats.di,
-        si: stats.si,
-        reg: stats.reg,
-        mem: stats.mem
-    });
 }
 function saveTestCase(vscode) {
     console.log("saving testcase");
@@ -27822,43 +27822,14 @@ function saveTestCase(vscode) {
         data: data
     });
 }
-function showMultiScreen(data, status, setStatus) {
-    let saveButton = document.getElementById("save_button");
-    saveButton.className = "hidden";
-    saveButton.hidden = true;
-    saveButton.disabled = true;
-    saveButton.style = "opacity: 0;";
-    updateStats(data.stats, status, setStatus);
-}
-function ScreenView({ vscode }) {
+function ScreenView({ vscode, stats, status = "", log = "", title }) {
     _s();
-    const [{ badge, di, si, reg, mem }, setStatus] = (0, _react.useState)({
-        badge: (0, _badge.BadgeType).IN_PROGRESS,
-        di: "??",
-        si: "??",
-        reg: "??",
-        mem: "??"
-    });
-    const [log, setLog] = (0, _react.useState)("");
-    const [title, setTitle] = (0, _react.useState)("RISC-V Screen View");
+    const { di = "??", mem = "??", reg = "??", si = "??" } = stats;
+    const badge = getBadge(status);
     (0, _react.useEffect)(()=>{
         window.addEventListener('message', (event)=>{
             const message = event.data; // Received message
             switch(message.command){
-                case 'screen_update':
-                    handleUpdateScreen(message.data, setStatus);
-                    break;
-                case 'show_past_screen':
-                    showPastScreen(message.data, setStatus);
-                    break;
-                case "show_multi_screen":
-                    showMultiScreen(message.data, message.data.status, setStatus);
-                    setLog(message.log);
-                    // Hide canvas image
-                    let canvas = document.getElementById("screen");
-                    canvas.hidden = true;
-                    setTitle("RISCV MultiExec Results");
-                    break;
                 case 'context_update':
                     seed = message.data.seed;
                     break;
@@ -27877,7 +27848,7 @@ function ScreenView({ vscode }) {
             children: line
         }, void 0, false, {
             fileName: "src/views/ScreenView.js",
-            lineNumber: 212,
+            lineNumber: 77,
             columnNumber: 5
         }, this);
     const StatsDisplay = ({ title, value, id })=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -27894,7 +27865,7 @@ function ScreenView({ vscode }) {
                     children: title
                 }, void 0, false, {
                     fileName: "src/views/ScreenView.js",
-                    lineNumber: 219,
+                    lineNumber: 84,
                     columnNumber: 7
                 }, this),
                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("p", {
@@ -27906,13 +27877,13 @@ function ScreenView({ vscode }) {
                     children: value
                 }, void 0, false, {
                     fileName: "src/views/ScreenView.js",
-                    lineNumber: 220,
+                    lineNumber: 85,
                     columnNumber: 7
                 }, this)
             ]
         }, void 0, true, {
             fileName: "src/views/ScreenView.js",
-            lineNumber: 218,
+            lineNumber: 83,
             columnNumber: 5
         }, this);
     return /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
@@ -27931,7 +27902,7 @@ function ScreenView({ vscode }) {
                             children: title
                         }, void 0, false, {
                             fileName: "src/views/ScreenView.js",
-                            lineNumber: 227,
+                            lineNumber: 92,
                             columnNumber: 9
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -27948,26 +27919,26 @@ function ScreenView({ vscode }) {
                                     children: "Save Testcase"
                                 }, void 0, false, {
                                     fileName: "src/views/ScreenView.js",
-                                    lineNumber: 230,
+                                    lineNumber: 95,
                                     columnNumber: 11
                                 }, this),
                                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _badgeDefault.default), {
                                     badgeType: badge
                                 }, void 0, false, {
                                     fileName: "src/views/ScreenView.js",
-                                    lineNumber: 232,
+                                    lineNumber: 97,
                                     columnNumber: 11
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "src/views/ScreenView.js",
-                            lineNumber: 229,
+                            lineNumber: 94,
                             columnNumber: 9
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/views/ScreenView.js",
-                    lineNumber: 226,
+                    lineNumber: 91,
                     columnNumber: 7
                 }, this),
                 log.split("\n").map((line, index)=>/*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(LogLineFormatted, {
@@ -27975,7 +27946,7 @@ function ScreenView({ vscode }) {
                         line: line
                     }, void 0, false, {
                         fileName: "src/views/ScreenView.js",
-                        lineNumber: 239,
+                        lineNumber: 104,
                         columnNumber: 33
                     }, this)),
                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -27990,7 +27961,7 @@ function ScreenView({ vscode }) {
                             height: "160"
                         }, void 0, false, {
                             fileName: "src/views/ScreenView.js",
-                            lineNumber: 243,
+                            lineNumber: 108,
                             columnNumber: 9
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("img", {
@@ -28001,13 +27972,13 @@ function ScreenView({ vscode }) {
                             id: "pastScreen"
                         }, void 0, false, {
                             fileName: "src/views/ScreenView.js",
-                            lineNumber: 244,
+                            lineNumber: 109,
                             columnNumber: 9
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/views/ScreenView.js",
-                    lineNumber: 242,
+                    lineNumber: 107,
                     columnNumber: 7
                 }, this),
                 /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -28021,7 +27992,7 @@ function ScreenView({ vscode }) {
                             value: di
                         }, void 0, false, {
                             fileName: "src/views/ScreenView.js",
-                            lineNumber: 248,
+                            lineNumber: 113,
                             columnNumber: 9
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(StatsDisplay, {
@@ -28029,7 +28000,7 @@ function ScreenView({ vscode }) {
                             value: si
                         }, void 0, false, {
                             fileName: "src/views/ScreenView.js",
-                            lineNumber: 249,
+                            lineNumber: 114,
                             columnNumber: 9
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(StatsDisplay, {
@@ -28037,7 +28008,7 @@ function ScreenView({ vscode }) {
                             value: reg
                         }, void 0, false, {
                             fileName: "src/views/ScreenView.js",
-                            lineNumber: 250,
+                            lineNumber: 115,
                             columnNumber: 9
                         }, this),
                         /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(StatsDisplay, {
@@ -28045,24 +28016,24 @@ function ScreenView({ vscode }) {
                             value: mem
                         }, void 0, false, {
                             fileName: "src/views/ScreenView.js",
-                            lineNumber: 251,
+                            lineNumber: 116,
                             columnNumber: 9
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "src/views/ScreenView.js",
-                    lineNumber: 247,
+                    lineNumber: 112,
                     columnNumber: 7
                 }, this)
             ]
         }, void 0, true, {
             fileName: "src/views/ScreenView.js",
-            lineNumber: 225,
+            lineNumber: 90,
             columnNumber: 5
         }, this)
     }, void 0, false);
 }
-_s(ScreenView, "uMbtwTo3J3dPv8zsPvXNIiAO0gA=");
+_s(ScreenView, "OD7bBpZva5O2jO+Puf00hKivP7c=");
 _c = ScreenView;
 var _c;
 $RefreshReg$(_c, "ScreenView");

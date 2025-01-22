@@ -1,16 +1,14 @@
 import { BYTES_PER_ROW } from "../App";
 
-export default function MemoryView({ title, gp, baseAddress, memoryData, oldMemory, showInstructions, reverse, memoryEnd }) {
+export default function MemoryView({ title, baseAddress, memoryData, oldMemory, reverse }) {
+  if (!memoryData) {
+    return <></>
+  }
+
   const rows = Math.ceil(memoryData.length / BYTES_PER_ROW);
 
   let rowData =
     [...Array(rows)].map((_, row) => {
-      const isInstruction = false; //baseAddress + row * BYTES_PER_ROW < gp;
-
-      if (isInstruction && !showInstructions) {
-        return <></>
-      }
-
       return (
         <div className='row'>
           <span className='address'>{(baseAddress + row * BYTES_PER_ROW).toString().padStart(6, "0")}</span>
@@ -22,14 +20,13 @@ export default function MemoryView({ title, gp, baseAddress, memoryData, oldMemo
 
                 let hexIdentifier;
 
+                // TODO: Replace with old memory system (show deltas)
                 if (false && oldMemory.current[idx] !== value) {
                   // different than last step, let's highlight it
                   hexIdentifier = "hex-value-recently-changed";
                   // oldMemory.current[idx] = value; 
-                } else if (!isInstruction) {
-                  hexIdentifier = "hex-value";
                 } else {
-                  hexIdentifier = "hex-value-instruction";
+                  hexIdentifier = "hex-value";
                 }
 
                 return (

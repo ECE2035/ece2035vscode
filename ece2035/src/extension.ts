@@ -69,7 +69,6 @@ export function activate(context: vscode.ExtensionContext) {
 	const descriptionFactory = new DebugDescriptorFactory(context, useLocalEmulator, emulatorPath);
 	disposables.push(vscode.debug.registerDebugAdapterDescriptorFactory("riscv-vm", descriptionFactory));
 	disposables.push(vscode.debug.registerDebugConfigurationProvider("riscv-vm", configProvider));
-	console.log("activated");
 
 	checkDependencies(context);
 
@@ -80,7 +79,6 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.window.registerTreeDataProvider('riscvtestcases', testCasesManager));
 
 	vscode.debug.onDidReceiveDebugSessionCustomEvent((event) => {
-		console.log("Received event: " + event.event);
 		if (event.event === "riscv_screen") {
 			screenManager.sendScreenMessage("screen_update", event.body);
 
@@ -116,16 +114,10 @@ export function activate(context: vscode.ExtensionContext) {
 			testCasesManager.addNewTestCase(title, data.seed.toString(), "unknown", data.image);
 		});
 	});
-
-
-	screenManager.registerCommandHandler("readMemory", (data) => {
-		console.log("ready triggered");
-	});
 }
 
 // This method is called when your extension is deactivated
 export function deactivate() {
-	console.log("deactived");
 	disposables.forEach(d => d.dispose());
 	deactivateLanguageClient();
 }
