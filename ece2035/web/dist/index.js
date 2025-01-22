@@ -27286,7 +27286,8 @@ const initialState = {
         di: null,
         mem: null,
         reg: null,
-        si: null
+        si: null,
+        pc: null
     },
     status: null
 };
@@ -27420,7 +27421,7 @@ function App() {
                 title: title
             }, void 0, false, {
                 fileName: "src/App.js",
-                lineNumber: 178,
+                lineNumber: 179,
                 columnNumber: 7
             }, this),
             memory !== undefined && memory.main !== null ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
@@ -27435,12 +27436,12 @@ function App() {
                             memoryData: memory.main
                         }, void 0, false, {
                             fileName: "src/App.js",
-                            lineNumber: 183,
+                            lineNumber: 184,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "src/App.js",
-                        lineNumber: 182,
+                        lineNumber: 183,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -27454,12 +27455,12 @@ function App() {
                                     oldMemory: oldMemory
                                 }, void 0, false, {
                                     fileName: "src/App.js",
-                                    lineNumber: 188,
+                                    lineNumber: 189,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "src/App.js",
-                                lineNumber: 187,
+                                lineNumber: 188,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -27471,18 +27472,18 @@ function App() {
                                     oldMemory: oldMemory
                                 }, void 0, false, {
                                     fileName: "src/App.js",
-                                    lineNumber: 191,
+                                    lineNumber: 192,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "src/App.js",
-                                lineNumber: 190,
+                                lineNumber: 191,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "src/App.js",
-                        lineNumber: 186,
+                        lineNumber: 187,
                         columnNumber: 9
                     }, this)
                 ]
@@ -27824,7 +27825,7 @@ function saveTestCase(vscode) {
 }
 function ScreenView({ vscode, stats, status = "", log = "", title }) {
     _s();
-    const { di = "??", mem = "??", reg = "??", si = "??" } = stats;
+    const { di = "??", mem = "??", reg = "??", si = "??", pc } = stats;
     const badge = getBadge(status);
     (0, _react.useEffect)(()=>{
         window.addEventListener('message', (event)=>{
@@ -28018,6 +28019,15 @@ function ScreenView({ vscode, stats, status = "", log = "", title }) {
                             fileName: "src/views/ScreenView.js",
                             lineNumber: 116,
                             columnNumber: 9
+                        }, this),
+                        pc && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(StatsDisplay, {
+                            centered: true,
+                            title: "Program Counter",
+                            value: pc
+                        }, void 0, false, {
+                            fileName: "src/views/ScreenView.js",
+                            lineNumber: 117,
+                            columnNumber: 17
                         }, this)
                     ]
                 }, void 0, true, {

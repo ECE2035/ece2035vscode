@@ -20,6 +20,7 @@ const initialState = {
     mem: null,
     reg: null,
     si: null,
+    pc: null,
   },
   status: null
 };

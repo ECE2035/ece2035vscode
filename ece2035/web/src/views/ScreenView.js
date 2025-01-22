@@ -49,7 +49,7 @@ function saveTestCase(vscode) {
 
 
 export default function ScreenView({ vscode, stats, status = "", log = "", title }) {
-  const { di = "??", mem = "??", reg = "??", si = "??" } = stats;
+  const { di = "??", mem = "??", reg = "??", si = "??", pc } = stats;
   
   const badge = getBadge(status);
 
@@ -79,7 +79,7 @@ export default function ScreenView({ vscode, stats, status = "", log = "", title
     </div>
   )
 
-  const StatsDisplay = ({title, value, id}) => (
+  const StatsDisplay = ({title, value, id }) => (
     <div style={{ borderRadius: '0.5rem' }}>
       <p style={{ fontSize: '0.875rem', fontWeight: '500', color: '#718096' }}>{title}</p>
       <p id={id} style={{ fontSize: '1.25rem', fontWeight: '700' }}>{value}</p>
@@ -114,6 +114,7 @@ export default function ScreenView({ vscode, stats, status = "", log = "", title
         <StatsDisplay title={"Static Instructions"} value={si}/>
         <StatsDisplay title={"Registers Used"} value={reg}/>
         <StatsDisplay title={"Memory Used"} value={mem}/>
+        { pc && <StatsDisplay centered={true} title={"Program Counter"} value={pc}/> }
       </div>
     </body>
 
