@@ -28029,15 +28029,15 @@ function ScreenView({ vscode, stats, status = "", log = "", title }) {
                             lineNumber: 116,
                             columnNumber: 9
                         }, this),
-                        pc && /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(StatsDisplay, {
+                        pc ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)(StatsDisplay, {
                             centered: true,
                             title: "Program Counter",
                             value: pc
                         }, void 0, false, {
                             fileName: "src/views/ScreenView.js",
                             lineNumber: 117,
-                            columnNumber: 17
-                        }, this)
+                            columnNumber: 16
+                        }, this) : /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {}, void 0, false)
                     ]
                 }, void 0, true, {
                     fileName: "src/views/ScreenView.js",

@@ -114,7 +114,7 @@ export default function ScreenView({ vscode, stats, status = "", log = "", title
         <StatsDisplay title={"Static Instructions"} value={si}/>
         <StatsDisplay title={"Registers Used"} value={reg}/>
         <StatsDisplay title={"Memory Used"} value={mem}/>
-        { pc && <StatsDisplay centered={true} title={"Program Counter"} value={pc}/> }
+        { pc ? <StatsDisplay centered={true} title={"Program Counter"} value={pc}/> : <></> }
       </div>
     </body>
 
