@@ -5,7 +5,6 @@ import { TestCaseExecutor, TestCaseExecutionResult } from './testCaseExecution';
 import { getResolvedLaunchConfig } from '../utils';
 import { ScreenManager } from '../screenManager';
 import { fail } from 'assert';
-var screenManager: ScreenManager;
 var globalContext: vscode.ExtensionContext;
 
 
@@ -41,11 +40,13 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
 
     private program: string = "";
     private assignment: string = "";
+    private screenManager: ScreenManager;
 
     public updatedResultCallback: any;
 
-    constructor(context: vscode.ExtensionContext, useLocalEmulator: boolean, localEmulatorPath: string) {
+    constructor(context: vscode.ExtensionContext, screenManager: ScreenManager, useLocalEmulator: boolean, localEmulatorPath: string) {
         this.context = context;
+        this.screenManager = screenManager;
         this.useLocalEmulator = useLocalEmulator;
         this.localEmulatorPath = localEmulatorPath;
 
@@ -179,10 +180,6 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
     }
 
     private initializeMultiTest(context: vscode.ExtensionContext) {
-        if (!screenManager) {
-            screenManager = new ScreenManager(context);
-        }
-
         // validate workspaces
         if (!this.validateWorkspaceFolders()) {
             return "";
@@ -300,8 +297,6 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
                     avgAll.reg += result.regUsed;
                     avgAll.mem += result.memUsed;
 
-                    outputLog = outputLog + String(result.memUsed) + " \n";
-
                     if (result.status === "pass") {
                         avgPassed.di += result.di;
                         avgPassed.si += result.si;
@@ -335,27 +330,20 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
                         else {
                             outputLog += (`Average Passed Test Cases DI: ${formattedPass.di}, SI: ${formattedPass.si}, Reg: ${formattedPass.reg}, Mem: ${formattedPass.mem}\n`);
                         }
-                        // Optionally show information to the user if not in debug mode
-                        vscode.window.showInformationMessage(
-                            `Test Case Averages: DI=${formattedAll.di}, SI=${formattedAll.si}, Reg=${formattedAll.reg}, Mem=${formattedAll.mem}`
-                        );
-
-                        screenManager.openScreenPanel();
-
-                        if (screenManager.getScreenPanel()) {
+                        if (this.screenManager.getScreenPanel()) {
                             let data: MultiScreenData = {
                                 status: "done",
                                 stats: formattedPass,
                             };
 
-                            const screenPanel = screenManager.getScreenPanel();
+                            const screenPanel = this.screenManager.getScreenPanel();
 
                             if (screenPanel) {
-                                screenManager.postCommand({ command: "show_multi_screen", data: data, log: outputLog });
+                                this.screenManager.postCommand({ command: "show_multi_screen", data: data, log: outputLog });
                             }
 
                             console.log(data);
-                            screenManager.setMode("multi");
+                            this.screenManager.setMode("multi");
                         }
                     }
                 }
@@ -423,22 +411,22 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
                 outputLog += (`Pass Rate: (${passPercentage}%)\n`);
                 outputLog += ('Note that the Pass Rate is not indicative of your final grade, please ensure to exhaustively test your code.\n');
 
-                screenManager.openScreenPanel();
+                this.screenManager.openScreenPanel();
 
-                if (screenManager.getScreenPanel()) {
+                if (this.screenManager.getScreenPanel()) {
 
                     let data = {
                         status: "done",
                         stats: avgStats,
                     };
-                    const screenPanel = screenManager.getScreenPanel();
+                    const screenPanel = this.screenManager.getScreenPanel();
                     if (screenPanel) {
-                        screenManager.postCommand({ command: "show_multi_screen", data: data, log: outputLog });
+                        this.screenManager.postCommand({ command: "show_multi_screen", data: data, log: outputLog });
                     }
 
                     console.debug(data);
 
-                    screenManager.setMode("multi");
+                    this.screenManager.setMode("multi");
                 }
             }
         });

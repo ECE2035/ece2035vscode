@@ -52,7 +52,7 @@ export function activate(context: vscode.ExtensionContext) {
 		screenManager.openScreenPanel();
 	});
 
-	testCasesManager = new TestCasesManager(context, useLocalEmulator, emulatorPath);
+	testCasesManager = new TestCasesManager(context, screenManager, useLocalEmulator, emulatorPath);
 	testCasesManager.updatedResultCallback = newTestResult;
 
 	let newAssignmentCommand = vscode.commands.registerCommand('ece2035.newAssignment', setupDevEnvironmentCommand);

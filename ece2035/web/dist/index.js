@@ -27333,9 +27333,9 @@ function App() {
     const handleUpdateScreen = (data)=>{
         let canvas = document.getElementById("screen");
         let img = document.getElementById("pastScreen");
+        canvas.hidden = false;
         if (img.hidden === false) {
             img.hidden = true;
-            canvas.hidden = false;
             let saveButton = document.getElementById("save_button");
             saveButton.className = "primary-button";
             saveButton.hidden = false;
@@ -27378,6 +27378,11 @@ function App() {
         };
         setState(newState);
     };
+    const clearData = ()=>{
+        setState(initialState);
+        let img = document.getElementById("pastScreen");
+        img.hidden = true;
+    };
     (0, _react.useEffect)(()=>{
         window.addEventListener("message", (event)=>{
             console.log("Received 1", event.data);
@@ -27386,12 +27391,16 @@ function App() {
                 case 'screen_update':
                     handleUpdateScreen(data);
                     updateData(data);
+                    setLog("");
                     break;
                 case 'show_past_screen':
                     showPastScreen(data);
                     updateData(data);
+                    setLog("");
                     break;
                 case "show_multi_screen":
+                    // Clear all previous data
+                    clearData();
                     showMultiScreen(data, data.status);
                     setLog(log);
                     // Hide canvas image
@@ -27421,7 +27430,7 @@ function App() {
                 title: title
             }, void 0, false, {
                 fileName: "src/App.js",
-                lineNumber: 179,
+                lineNumber: 190,
                 columnNumber: 7
             }, this),
             memory !== undefined && memory.main !== null ? /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)((0, _jsxDevRuntime.Fragment), {
@@ -27436,12 +27445,12 @@ function App() {
                             memoryData: memory.main
                         }, void 0, false, {
                             fileName: "src/App.js",
-                            lineNumber: 184,
+                            lineNumber: 195,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "src/App.js",
-                        lineNumber: 183,
+                        lineNumber: 194,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -27455,12 +27464,12 @@ function App() {
                                     oldMemory: oldMemory
                                 }, void 0, false, {
                                     fileName: "src/App.js",
-                                    lineNumber: 189,
+                                    lineNumber: 200,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "src/App.js",
-                                lineNumber: 188,
+                                lineNumber: 199,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, _jsxDevRuntime.jsxDEV)("div", {
@@ -27472,18 +27481,18 @@ function App() {
                                     oldMemory: oldMemory
                                 }, void 0, false, {
                                     fileName: "src/App.js",
-                                    lineNumber: 192,
+                                    lineNumber: 203,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "src/App.js",
-                                lineNumber: 191,
+                                lineNumber: 202,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "src/App.js",
-                        lineNumber: 187,
+                        lineNumber: 198,
                         columnNumber: 9
                     }, this)
                 ]

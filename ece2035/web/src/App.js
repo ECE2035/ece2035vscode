@@ -75,9 +75,10 @@ function App() {
     let canvas = document.getElementById("screen");
     let img = document.getElementById("pastScreen");
 
+    canvas.hidden = false;
+
     if (img.hidden === false) {
       img.hidden = true;
-      canvas.hidden = false;
       let saveButton = document.getElementById("save_button");
       saveButton.className = "primary-button";
       saveButton.hidden = false;
@@ -131,6 +132,12 @@ function App() {
     setState(newState);
   }
 
+  const clearData = () => {
+    setState(initialState);
+    let img = document.getElementById("pastScreen");
+    img.hidden = true;
+  }
+
   useEffect(() => {
     window.addEventListener("message", (event) => {
       console.log("Received 1", event.data);
@@ -141,13 +148,17 @@ function App() {
         case 'screen_update':
           handleUpdateScreen(data);
           updateData(data);
+          setLog("");
           break;
 
         case 'show_past_screen':
           showPastScreen(data);
           updateData(data);
+          setLog("");
           break;
         case "show_multi_screen":
+          // Clear all previous data
+          clearData();
           showMultiScreen(data, data.status);
           
           setLog(log);
