@@ -11,9 +11,8 @@ export default function DumpMemoryButton({ memoryData }) {
 
 
         for (let i = 0; i < memoryData.length; i += 4) {
-
-            let val = memoryData[i] + memoryData[i + 1]
-                + memoryData[i + 2] + memoryData[i + 3];
+            let val = (memoryData[i] << 24) | (memoryData[i + 1] << 16) | (memoryData[i + 2] << 8) | (memoryData[i + 3]);
+            val >>>= 0;
 
             let indexPadded = String(i).padStart(4, "0");
 
