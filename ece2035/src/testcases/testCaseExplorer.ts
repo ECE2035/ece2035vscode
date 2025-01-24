@@ -3,8 +3,33 @@ import { TestCase } from './testCase';
 import * as path from 'path';
 import { TestCaseExecutor, TestCaseExecutionResult } from './testCaseExecution';
 import { getResolvedLaunchConfig } from '../utils';
+import { ScreenManager } from '../screenManager';
+import { fail } from 'assert';
+var globalContext: vscode.ExtensionContext;
+
+
+const outputChannel = vscode.window.createOutputChannel("Test Suite Results");
+
+type MultiScreenData = {
+    status: string,
+    stats: ProgramStats
+};
+
+type TotalProgramStats = {
+    avgAll: ProgramStats,
+    avgPassed: ProgramStats
+};
+
+type ProgramStats = {
+    di: number,
+    si: number,
+    reg: number,
+    mem: number
+};
+
 
 export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
+
     private _onDidChangeTreeData: vscode.EventEmitter<TestCase | undefined> = new vscode.EventEmitter<TestCase | undefined>();
     readonly onDidChangeTreeData: vscode.Event<TestCase | undefined> = this._onDidChangeTreeData.event;
 
@@ -13,10 +38,15 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
     private useLocalEmulator: boolean;
     private localEmulatorPath: string;
 
+    private program: string = "";
+    private assignment: string = "";
+    private screenManager: ScreenManager;
+
     public updatedResultCallback: any;
 
-    constructor(context: vscode.ExtensionContext, useLocalEmulator: boolean, localEmulatorPath: string) {
+    constructor(context: vscode.ExtensionContext, screenManager: ScreenManager, useLocalEmulator: boolean, localEmulatorPath: string) {
         this.context = context;
+        this.screenManager = screenManager;
         this.useLocalEmulator = useLocalEmulator;
         this.localEmulatorPath = localEmulatorPath;
 
@@ -92,7 +122,6 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
         item.updateIcon("running");
         this._onDidChangeTreeData.fire(item);
 
-        let title = item.label;
         let seed = item.description;
         let workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders || workspaceFolders.length === 0 || !workspaceFolders[0]) {
@@ -101,6 +130,15 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
         }
 
         // accessing launch.json parameters
+        let launchConfigs = getResolvedLaunchConfig();
+
+        // likely to occur if a test was run outside of a code editor
+        if (launchConfigs.length === 0) {
+            item.updateIcon("fail");
+            this._onDidChangeTreeData.fire(item);
+            return;
+        }
+
         let launchConfig = getResolvedLaunchConfig()[0];
         let assemblyCode: string | undefined = launchConfig["program"];
         let assignmentCode: string | undefined = launchConfig["assignment"];
@@ -141,30 +179,104 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
         executor.execute(assignmentCode, assemblyCode, [seed]);
     }
 
-    public async handleRunAllTestCases() {
-        let workspaceFolders = vscode.workspace.workspaceFolders;
-        if (!workspaceFolders || workspaceFolders.length === 0 || !workspaceFolders[0]) {
-            vscode.window.showErrorMessage("No workspace is opened. Please open a workspace to run test cases.");
-            return;
+    private initializeMultiTest(context: vscode.ExtensionContext) {
+        // validate workspaces
+        if (!this.validateWorkspaceFolders()) {
+            return "";
         }
 
         // accessing launch.json parameters
-        let launchConfig = getResolvedLaunchConfig()[0];
-        let assemblyCode: string | undefined = launchConfig["program"];
-        let assignmentCode: string | undefined = launchConfig["assignment"];
+        let [{ program, assignment }] = getResolvedLaunchConfig();
+
+        this.program = program;
+        this.assignment = assignment;
 
         // converting both to absolute paths
-        if (!assemblyCode || !assignmentCode) {
+        if (!program || !assignment) {
             vscode.window.showErrorMessage("Please set the program and assignment in launch.json to run test cases.");
-            return;
+            return "";
         }
 
         let binPath: string;
+
         if (!this.useLocalEmulator) {
             binPath = this.context.globalState.get("riscvemulator") as string;
         } else {
             binPath = this.localEmulatorPath;
         }
+
+        return binPath;
+    }
+
+    private validateWorkspaceFolders(): boolean {
+        let workspaceFolders = vscode.workspace.workspaceFolders;
+
+        if (!workspaceFolders?.length) {
+            vscode.window.showErrorMessage("No workspace is opened. Please open a workspace to run test cases.");
+            return false;
+        }
+
+        return true;
+    }
+
+    private getFormattedPassAverage(passAvg: number, passedTestCases: number): number {
+        // If the user passes zero test cases, there's a chance for a divide by 0
+        if (passedTestCases === 0) {
+            return 0;
+        }
+
+        return parseFloat((passAvg / passedTestCases).toFixed(2));
+    }
+
+    private getFormattedAverage(avg: number): number {
+        return parseFloat((avg / this.testCases.length).toFixed(2));
+    }
+
+    private getFormattedStats({ avgAll: all, avgPassed: passed }: TotalProgramStats, passedTestCases: number): TotalProgramStats {
+        return {
+            avgAll: {
+                si: this.getFormattedAverage(all.si),
+                di: this.getFormattedAverage(all.di),
+                mem: this.getFormattedAverage(all.mem),
+                reg: this.getFormattedAverage(all.reg),
+            },
+            avgPassed: {
+                si: this.getFormattedPassAverage(passed.si, passedTestCases),
+                di: this.getFormattedPassAverage(passed.di, passedTestCases),
+                mem: this.getFormattedPassAverage(passed.mem, passedTestCases),
+                reg: this.getFormattedPassAverage(passed.reg, passedTestCases)
+            }
+        };
+    }
+
+    public async handleRunAllTestCases(context: vscode.ExtensionContext) {
+        let binPath = this.initializeMultiTest(context);
+
+        if (binPath.length === 0) {
+            return;
+        }
+
+        let { avgAll, avgPassed }: TotalProgramStats = {
+            avgAll: {
+                di: 0,
+                si: 0,
+                reg: 0,
+                mem: 0
+            },
+            avgPassed: {
+                di: 0,
+                si: 0,
+                reg: 0,
+                mem: 0
+            }
+        };
+
+        let completedTestCases = 0;
+        let passedTestCases = 0;
+
+        let outputLog = "";
+
+        //const debugConsole = vscode.debug.activeDebugConsole;
 
         const executor = new TestCaseExecutor(binPath, (result: TestCaseExecutionResult) => {
             // updating the status of the test case
@@ -179,10 +291,60 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
                         mem: result.memUsed,
                         numErrors: result.numErrors
                     };
+
+                    avgAll.di += result.di;
+                    avgAll.si += result.si;
+                    avgAll.reg += result.regUsed;
+                    avgAll.mem += result.memUsed;
+
+                    if (result.status === "pass") {
+                        avgPassed.di += result.di;
+                        avgPassed.si += result.si;
+                        avgPassed.reg += result.regUsed;
+                        avgPassed.mem += result.memUsed;
+
+                        passedTestCases++;
+                    }
+
                     this._onDidChangeTreeData.fire(testCase);
 
                     if (this.updatedResultCallback) {
                         this.updatedResultCallback(testCase);
+                    }
+
+                    // Increment completed test cases
+                    completedTestCases++;
+
+                    // Check if all test cases are completed
+                    if (completedTestCases === this.testCases.length) {
+                        // Calculate averages
+
+                        let { avgAll: formattedAll, avgPassed: formattedPass } = this.getFormattedStats({ avgAll, avgPassed }, passedTestCases);
+
+                        outputChannel.show(true);  // Make sure the Output Channel is visible
+                        //put them all on the same line
+                        if (passedTestCases === 0) {
+                            outputLog += ('All test cases failed, go through your program to ensure you have no errors ' +
+                                'and that you have read the assignment write up carefully to ensure you are reporting your answers correctly.\n');
+                        }
+                        else {
+                            outputLog += (`Average Passed Test Cases DI: ${formattedPass.di}, SI: ${formattedPass.si}, Reg: ${formattedPass.reg}, Mem: ${formattedPass.mem}\n`);
+                        }
+                        if (this.screenManager.getScreenPanel()) {
+                            let data: MultiScreenData = {
+                                status: "done",
+                                stats: formattedPass,
+                            };
+
+                            const screenPanel = this.screenManager.getScreenPanel();
+
+                            if (screenPanel) {
+                                this.screenManager.postCommand({ command: "show_multi_screen", data: data, log: outputLog });
+                            }
+
+                            console.log(data);
+                            this.screenManager.setMode("multi");
+                        }
                     }
                 }
             }
@@ -196,12 +358,89 @@ export class TestCasesManager implements vscode.TreeDataProvider<TestCase> {
             this.testCases[i].updateIcon("running");
         }
 
-        executor.execute(assignmentCode, assemblyCode, seeds);
+        executor.execute(this.assignment, this.program, seeds);
+
+    }
+
+    public async handleMultiExecute(amount: number, context: vscode.ExtensionContext) {
+        let binPath = this.initializeMultiTest(context);
+
+        if (binPath.length === 0) {
+            return;
+        }
+
+        let avgStats: ProgramStats = {
+            di: 0,
+            si: 0,
+            reg: 0,
+            mem: 0
+        };
+
+        let completedTestCases = 0;
+        let failedSeeds = 0;
+
+        let outputLog = "";
+
+        outputChannel.show(true);
+        outputLog += ("Running MultiExecute with amount: " + amount + "\n");
+        const executor = new TestCaseExecutor(binPath, (result: TestCaseExecutionResult) => {
+            console.debug("Running seed: " + result.seed);
+            avgStats.di += result.di;
+            avgStats.si += result.si;
+            avgStats.reg += result.regUsed;
+            avgStats.mem += result.memUsed;
+            completedTestCases++;
+            if (result.status === "fail") {
+                outputLog += (`Seed ${result.seed} failed\n`);
+                failedSeeds++;
+            }
+            if (completedTestCases === amount) {
+                avgStats = {
+                    di: this.getFormattedPassAverage(avgStats.di, amount),
+                    si: this.getFormattedPassAverage(avgStats.si, amount),
+                    mem: this.getFormattedPassAverage(avgStats.mem, amount),
+                    reg: this.getFormattedPassAverage(avgStats.reg, amount),
+                };
+
+                if (failedSeeds === amount) {
+                    outputLog += ('All seeds failed, go through your program to ensure you have no errors ' +
+                        'and that you have read the assignment write up carefully to ensure you are reporting your answers correctly.\n');
+                }
+
+                let passPercentage = ((amount - failedSeeds) / amount) * 100;
+                outputLog += (`Pass Rate: (${passPercentage}%)\n`);
+                outputLog += ('Note that the Pass Rate is not indicative of your final grade, please ensure to exhaustively test your code.\n');
+
+                this.screenManager.openScreenPanel();
+
+                if (this.screenManager.getScreenPanel()) {
+
+                    let data = {
+                        status: "done",
+                        stats: avgStats,
+                    };
+                    const screenPanel = this.screenManager.getScreenPanel();
+                    if (screenPanel) {
+                        this.screenManager.postCommand({ command: "show_multi_screen", data: data, log: outputLog });
+                    }
+
+                    console.debug(data);
+
+                    this.screenManager.setMode("multi");
+                }
+            }
+        });
+        let seeds: string[] = [];
+        for (let i = 0; i < amount; i++) {
+            //push a random seed instead
+            seeds.push(Math.floor(Math.random() * 1000000000).toString());
+        }
+
+        executor.execute(this.assignment, this.program, seeds);
     }
 
     public async debugTestCaseHandler(item: any) {
         // item should be a TestCase
-        let title = item.label;
         let seed = item.description;
         let workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders || workspaceFolders.length === 0 || !workspaceFolders[0]) {

@@ -52,7 +52,7 @@ export function activate(context: vscode.ExtensionContext) {
 		screenManager.openScreenPanel();
 	});
 
-	testCasesManager = new TestCasesManager(context, useLocalEmulator, emulatorPath);
+	testCasesManager = new TestCasesManager(context, screenManager, useLocalEmulator, emulatorPath);
 	testCasesManager.updatedResultCallback = newTestResult;
 
 	let newAssignmentCommand = vscode.commands.registerCommand('ece2035.newAssignment', setupDevEnvironmentCommand);
@@ -61,6 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
 	let deleteTestCaseCommand = vscode.commands.registerCommand('ece2035.deleteTestCase', deleteTestCase);
 	let viewTestCaseCommand = vscode.commands.registerCommand('ece2035.viewTestCase', viewTestCase);
 	let runAllTestCasesCommand = vscode.commands.registerCommand('ece2035.runAllTestCases', runAllTestCases);
+	let runMultiExecuteCommand = vscode.commands.registerCommand('ece2035.runMultiExecute', runMultiExecute);
 
 	let runCommand = vscode.commands.registerCommand("ece2035.runFile", runFile);
 
@@ -68,18 +69,16 @@ export function activate(context: vscode.ExtensionContext) {
 	const descriptionFactory = new DebugDescriptorFactory(context, useLocalEmulator, emulatorPath);
 	disposables.push(vscode.debug.registerDebugAdapterDescriptorFactory("riscv-vm", descriptionFactory));
 	disposables.push(vscode.debug.registerDebugConfigurationProvider("riscv-vm", configProvider));
-	console.log("activated");
 
 	checkDependencies(context);
 
-	context.subscriptions.push(openCommand, newAssignmentCommand, runCommand, runAllTestCasesCommand);
+	context.subscriptions.push(openCommand, newAssignmentCommand, runCommand, runAllTestCasesCommand, runMultiExecuteCommand);
 	context.subscriptions.push(runTestCaseCommand, debugTestCaseCommand, deleteTestCaseCommand, viewTestCaseCommand);
 	activateLanguageClient(context, useLocalEmulator, emulatorPath);
 
 	context.subscriptions.push(vscode.window.registerTreeDataProvider('riscvtestcases', testCasesManager));
 
 	vscode.debug.onDidReceiveDebugSessionCustomEvent((event) => {
-		console.log("Received event: " + event.event);
 		if (event.event === "riscv_screen") {
 			screenManager.sendScreenMessage("screen_update", event.body);
 
@@ -119,7 +118,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 // This method is called when your extension is deactivated
 export function deactivate() {
-	console.log("deactived");
 	disposables.forEach(d => d.dispose());
 	deactivateLanguageClient();
 }
@@ -167,7 +165,38 @@ function debugTestCase(item: any) {
 }
 
 function runAllTestCases() {
-	testCasesManager.handleRunAllTestCases();
+	testCasesManager.handleRunAllTestCases(globalContext);
+}
+//This code is mostly AI generated
+async function runMultiExecute() {
+    // Prompt the user for a number
+    const input = await vscode.window.showInputBox({
+        prompt: "Enter a number for multi-execution, 1 to 500",
+        placeHolder: "e.g., 42",
+		//modify validateInput to only accept numbers between 1 and 500
+        validateInput: (value) => {
+			if (value === undefined) {
+				return null;
+			}
+			if (isNaN(Number(value))) {
+				return "Please enter a valid number";
+			}
+			if (Number(value) < 1 || Number(value) > 500) {
+				return "Please enter a number between 1 and 500";
+			}
+        }
+    });
+	
+    if (input !== undefined) { // Check if the user didn't cancel
+        const number = Number(input);
+        testCasesManager.handleMultiExecute(number, globalContext); // Pass the input number
+		//console.log("promise results?" + averageResults);
+        vscode.window.showInformationMessage(`Multi-execution started with input number: ${number}`);
+		//screenManager.showMultiExecute(averageResults);
+    } else {
+        vscode.window.showWarningMessage("Operation canceled.");
+    }
+	
 }
 
 function deleteTestCase(item: any) {
