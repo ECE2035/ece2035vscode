@@ -182,12 +182,14 @@
       "title": "RISC-V",
       "properties": {
         "riscv.emulatorPath": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": "string",
           "default": null,
           "description": "(Optional) Specify an explicit emulator executable path to use for debugging."
+        },
+        "riscv.useLocalEmulator": {
+          "type": "boolean",
+          "default": false,
+          "description": "If selected, the emulator will attempt to use a local emulator executable as provided by emulatorPath."
         }
       }
     }
