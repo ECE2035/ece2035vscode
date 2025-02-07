@@ -27,7 +27,7 @@ var showingTestCase: TestCase | undefined;
 
 const configuration = vscode.workspace.getConfiguration("riscv");
 const emulatorPath: string = configuration.get("emulatorPath") || "";
-const useLocalEmulator = emulatorPath.length !== 0;
+const useLocalEmulator = configuration.get("useLocalEmulator") as boolean;
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
