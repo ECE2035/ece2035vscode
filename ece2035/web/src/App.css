@@ -88,6 +88,38 @@ td {
   display: none;
 }
 
+.hex-toolbar {
+  display: flex;
+  gap: 0.3rem;
+  justify-content: space-between;
+  padding: 0.1rem;
+  text-align: center;
+}
+
+.hex-toolbar-addr {
+  padding-right: 1rem;
+  padding-left: 1rem;
+  text-align: center;
+}
+
+.hex-toolbar-prev {
+  color: white;
+  text-decoration: none;
+
+}
+
+.hex-toolbar-next {
+  color: white;
+  text-decoration: none;
+  margin-right: 2rem;
+  
+}
+
+.arrow-disabled {
+  pointer-events: none;
+  color: gray;
+}
+
 .hex-viewer {
   display: flex;
   flex-direction: column;
