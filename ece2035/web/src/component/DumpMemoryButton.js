@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function DumpMemoryButton({ memoryData }) {
+export default function DumpMemoryButton({ memoryData, count }) {
     const [copied, setCopied] = useState(false);
 
 
@@ -10,7 +10,7 @@ export default function DumpMemoryButton({ memoryData }) {
         let output = "";
 
 
-        for (let i = 0; i < memoryData.length; i += 4) {
+        for (let i = 0; i < count * 4; i += 4) {
             let val = (memoryData[i] << 24) | (memoryData[i + 1] << 16) | (memoryData[i + 2] << 8) | (memoryData[i + 3]);
             val >>>= 0;
 

@@ -21,6 +21,7 @@ const initialState = {
     reg: null,
     si: null,
     pc: null,
+    allocated: null,
   },
   status: null
 };
@@ -121,6 +122,7 @@ function App() {
       return;
     }
 
+
     const newState = {
       ...data,
       memory: {
@@ -140,8 +142,6 @@ function App() {
 
   useEffect(() => {
     window.addEventListener("message", (event) => {
-      console.log("Received 1", event.data);
-
       const { command, data, log = "" } = event.data;
 
       switch (command) {
@@ -184,7 +184,6 @@ function App() {
 
   const baseAddress = 0;
 
-
   return (
     <>
       <ScreenView vscode={vscode} stats={stats} status={status} log={log} title={title} />
@@ -192,12 +191,12 @@ function App() {
       {memory !== undefined && memory.main !== null ? <>
 
         <div style={{ display: "flex", flexDirection: "column", rowGap: "0.5rem" }}>
-          <DumpMemoryButton memoryData={memory.main} />
+          <DumpMemoryButton count={stats.allocated} memoryData={memory.main} />
         </div>
 
         <div className='flex-container'>
           <div>
-            <MemoryView title={"Memory"} baseAddress={baseAddress} memoryData={memory.main} oldMemory={oldMemory} />
+            <MemoryView title={"Memory"} baseAddress={baseAddress} count={stats.allocated} memoryData={memory.main} oldMemory={oldMemory} />
           </div>
           <div>
             <MemoryView reverse={true} title={"Stack"} baseAddress={0x7FFFFFF0} memoryData={memory.stack} oldMemory={oldMemory} />
