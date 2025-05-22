@@ -3,7 +3,7 @@
   "displayName": "ERNIE",
   "description": "VS Code Companion Extension for Georgia Tech ECE 2035",
   "publisher": "GatechECEEdutools",
-  "version": "0.2.14",
+  "version": "0.2.15",
   "engines": {
     "vscode": "^1.75.0"
   },
