@@ -20,7 +20,7 @@ export class TestCase extends vscode.TreeItem {
         } else {
             this.contextValue = "testcase";
             this.command = {
-                command: 'ece2035.viewTestCase',
+                command: 'ernie.viewTestCase',
                 title: 'View Test Case',
                 arguments: [this]
             };

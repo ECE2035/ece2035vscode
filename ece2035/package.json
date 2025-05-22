@@ -1,8 +1,8 @@
 {
-  "name": "ece2035",
-  "displayName": "ECE2035",
+  "name": "ernie",
+  "displayName": "ERNIE",
   "description": "VS Code Companion Extension for Georgia Tech ECE 2035",
-  "publisher": "GatechECE2035",
+  "publisher": "GatechECEEdutools",
   "version": "0.2.14",
   "engines": {
     "vscode": "^1.75.0"
@@ -17,45 +17,45 @@
   "contributes": {
     "commands": [
       {
-        "command": "ece2035.openscreen",
+        "command": "ernie.openscreen",
         "title": "Open RISC-V Screen"
       },
       {
-        "command": "ece2035.newAssignment",
+        "command": "ernie.newAssignment",
         "title": "Create New RISCV Assignment"
       },
       {
-        "command": "ece2035.runTestCase",
+        "command": "ernie.runTestCase",
         "title": "Run RISCV Test Case",
         "icon": "$(play)"
       },
       {
-        "command": "ece2035.runFile",
+        "command": "ernie.runFile",
         "title": "Run RISCV File",
         "icon": "$(play)"
       },
       {
-        "command": "ece2035.debugTestCase",
+        "command": "ernie.debugTestCase",
         "title": "Debug RISCV Test Case",
         "icon": "$(debug-alt)"
       },
       {
-        "command": "ece2035.runAllTestCases",
+        "command": "ernie.runAllTestCases",
         "title": "Run All RISCV Test Cases",
         "icon": "$(run-all)"
       },
       {
-        "command": "ece2035.runMultiExecute",
+        "command": "ernie.runMultiExecute",
         "title": "Run Multi Execute",
         "icon": "$(export)"
       },
       {
-        "command": "ece2035.deleteTestCase",
+        "command": "ernie.deleteTestCase",
         "title": "Delete RISCV Test Case",
         "icon": "$(trash)"
       },
       {
-        "command": "ece2035.viewTestCase",
+        "command": "ernie.viewTestCase",
         "title": "View RISCV Test Case"
       }
     ],
@@ -142,36 +142,36 @@
     "menus": {
       "editor/title/run": [
         {
-          "command": "ece2035.runFile",
+          "command": "ernie.runFile",
           "when": "editorLangId == riscv && resourceExtname == .asm",
           "group": "navigation"
         }
       ],
       "view/item/context": [
         {
-          "command": "ece2035.deleteTestCase",
+          "command": "ernie.deleteTestCase",
           "when": "viewItem == testcase",
           "group": "inline@3"
         },
         {
-          "command": "ece2035.runTestCase",
+          "command": "ernie.runTestCase",
           "when": "viewItem == testcase",
           "group": "inline@1"
         },
         {
-          "command": "ece2035.debugTestCase",
+          "command": "ernie.debugTestCase",
           "when": "viewItem == testcase",
           "group": "inline@2"
         }
       ],
       "view/title": [
         {
-          "command": "ece2035.runAllTestCases",
+          "command": "ernie.runAllTestCases",
           "when": "view == riscvtestcases",
           "group": "navigation"
         },
         {
-          "command": "ece2035.runMultiExecute",
+          "command": "ernie.runMultiExecute",
           "description": "Diego's multiexecute",
           "when": "view == riscvtestcases",
           "group": "navigation"

@@ -41,12 +41,12 @@ export function activate(context: vscode.ExtensionContext) {
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "ece2035" is now active!');
+	console.log('Congratulations, your extension "ernie" is now active!');
 
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
-	let openCommand = vscode.commands.registerCommand('ece2035.openscreen', () => {
+	let openCommand = vscode.commands.registerCommand('ernie.openscreen', () => {
 		// The code you place here will be executed every time your command is executed
 		// Display a message box to the user
 		screenManager.openScreenPanel();
@@ -55,15 +55,15 @@ export function activate(context: vscode.ExtensionContext) {
 	testCasesManager = new TestCasesManager(context, screenManager, useLocalEmulator, emulatorPath);
 	testCasesManager.updatedResultCallback = newTestResult;
 
-	let newAssignmentCommand = vscode.commands.registerCommand('ece2035.newAssignment', setupDevEnvironmentCommand);
-	let runTestCaseCommand = vscode.commands.registerCommand('ece2035.runTestCase', runTestCase);
-	let debugTestCaseCommand = vscode.commands.registerCommand('ece2035.debugTestCase', debugTestCase);
-	let deleteTestCaseCommand = vscode.commands.registerCommand('ece2035.deleteTestCase', deleteTestCase);
-	let viewTestCaseCommand = vscode.commands.registerCommand('ece2035.viewTestCase', viewTestCase);
-	let runAllTestCasesCommand = vscode.commands.registerCommand('ece2035.runAllTestCases', runAllTestCases);
-	let runMultiExecuteCommand = vscode.commands.registerCommand('ece2035.runMultiExecute', runMultiExecute);
+	let newAssignmentCommand = vscode.commands.registerCommand('ernie.newAssignment', setupDevEnvironmentCommand);
+	let runTestCaseCommand = vscode.commands.registerCommand('ernie.runTestCase', runTestCase);
+	let debugTestCaseCommand = vscode.commands.registerCommand('ernie.debugTestCase', debugTestCase);
+	let deleteTestCaseCommand = vscode.commands.registerCommand('ernie.deleteTestCase', deleteTestCase);
+	let viewTestCaseCommand = vscode.commands.registerCommand('ernie.viewTestCase', viewTestCase);
+	let runAllTestCasesCommand = vscode.commands.registerCommand('ernie.runAllTestCases', runAllTestCases);
+	let runMultiExecuteCommand = vscode.commands.registerCommand('ernie.runMultiExecute', runMultiExecute);
 
-	let runCommand = vscode.commands.registerCommand("ece2035.runFile", runFile);
+	let runCommand = vscode.commands.registerCommand("ernie.runFile", runFile);
 
 	const configProvider = new DebugConfigurationProvider();
 	const descriptionFactory = new DebugDescriptorFactory(context, useLocalEmulator, emulatorPath);
