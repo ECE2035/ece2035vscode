@@ -1,7 +1,7 @@
 {
   "name": "ernie",
   "displayName": "ERNIE",
-  "description": "VS Code Companion Extension for Georgia Tech ECE 2035",
+  "description": "Emulator for RISCV iN Integrated Environment",
   "publisher": "GatechECEEdutools",
   "version": "0.2.15",
   "engines": {
