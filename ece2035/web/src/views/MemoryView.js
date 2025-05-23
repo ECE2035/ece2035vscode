@@ -20,10 +20,12 @@ export default function MemoryView({ title, baseAddress, memoryData, oldMemory, 
 
   const numPages = count !== -1 ? Math.ceil(count / PAGINATED_SIZE) : Math.ceil(count / PAGINATED_SIZE);
 
-  const paginatedBase = PAGINATED_SIZE * page;
-  const paginatedEnd = count === -1 ? Math.min(PAGINATED_SIZE * page + PAGINATED_SIZE, count) : count;
+  const paginatedStart = PAGINATED_SIZE * page; // 128
+
+
+  const paginatedEnd = paginatedStart + Math.min(count - paginatedStart, PAGINATED_SIZE);
   
-  const paginatedLength = paginatedEnd - paginatedBase;
+  const paginatedLength = paginatedEnd - paginatedStart;
 
   console.log({count});
 
@@ -31,10 +33,10 @@ export default function MemoryView({ title, baseAddress, memoryData, oldMemory, 
     [...Array(paginatedLength)].map((_, row) => {
       return (
         <div className='row'>
-          <span className='address'>{(baseAddress + paginatedBase + row * BYTES_PER_ROW).toString().padStart(6, "0")}</span>
+          <span className='address'>{(baseAddress + (paginatedStart + row) * BYTES_PER_ROW).toString().padStart(6, "0")}</span>
           <div className='hex-values'>
             {[...Array(BYTES_PER_ROW)].map((_, col) => {
-              const idx = paginatedBase + row * BYTES_PER_ROW + col;
+              const idx = paginatedStart + row * BYTES_PER_ROW + col;
               if (idx < memoryData.length) {
                 const value = memoryData[idx];
 
