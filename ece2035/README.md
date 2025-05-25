@@ -1,10 +1,10 @@
-# ECE 2035 Class Tool
+# RISC-V Emulator for Coding, Testing, Debugging, and Measuring Performance.
 
-## RISC-V Emulator for Test, Debug, and Measuring Performance.
+## ECE 2035 Class Tool
 
 ## THIS TOOL IS STILL IN DEVELOPMENT - DO NOT USE UNLESS INSTRUCTED TO DO SO
 
-### Version Alpha 1.1.12
+### Version Alpha 1.1.13
 
 Features
 * RISC-V Emulator (RV32IM instruction set)
