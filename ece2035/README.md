@@ -2,9 +2,7 @@
 
 ## ECE 2035 Class Tool
 
-## THIS TOOL IS STILL IN DEVELOPMENT - DO NOT USE UNLESS INSTRUCTED TO DO SO
-
-### Version Alpha 1.1.13
+### Version Alpha 1.1.14
 
 Features
 * RISC-V Emulator (RV32IM instruction set)
