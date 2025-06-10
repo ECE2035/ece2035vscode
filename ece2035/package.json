@@ -3,7 +3,7 @@
   "displayName": "ERNIE",
   "description": "Emulator for RISCV iN Integrated Environment",
   "publisher": "GatechECEEdutools",
-  "version": "0.2.18",
+  "version": "0.2.19",
   "engines": {
     "vscode": "^1.75.0"
   },
