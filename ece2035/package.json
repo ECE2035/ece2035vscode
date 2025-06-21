@@ -1,9 +1,10 @@
 {
   "name": "ernie",
   "displayName": "ERNIE",
-  "description": "Emulator for RISCV iN Integrated Environment",
+  "description": "Emulator for RISCV iN Instructional Environment",
   "publisher": "GatechECEEdutools",
   "version": "0.2.19",
+  "icon": "./assets/ernieduck-icon.png",
   "engines": {
     "vscode": "^1.75.0"
   },
