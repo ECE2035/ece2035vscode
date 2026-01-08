@@ -3,7 +3,7 @@
   "displayName": "ERNIE",
   "description": "Emulator for RISCV iN Instructional Environment",
   "publisher": "GatechECEEdutools",
-  "version": "0.2.21",
+  "version": "0.2.22",
   "icon": "./assets/ernieduck-icon.png",
   "engines": {
     "vscode": "^1.75.0"
